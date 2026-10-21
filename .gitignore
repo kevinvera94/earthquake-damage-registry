@@ -1,0 +1,223 @@
+# ==============================================================
+# .gitignore — earthquake-damage-registry
+# Genérico: stack aún no definido. Prioridad: NO subir secretos.
+# ==============================================================
+
+# --------------------------------------------------------------
+# 1. SECRETOS Y CREDENCIALES  (nunca versionar)
+# --------------------------------------------------------------
+# Variables de entorno (solo se versionan los *.example)
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.sample
+*.env
+.envrc
+.direnv/
+
+# Claves y certificados
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.crt
+*.cer
+*.csr
+*.der
+*.gpg
+*.asc
+*.kdbx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_dsa
+*.ppk
+.ssh/
+
+# Credenciales de nube y servicios
+credentials.json
+credentials.*.json
+client_secret*.json
+service-account*.json
+serviceAccount*.json
+*-credentials.json
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+.aws/
+.azure/
+.gcloud/
+gcloud-*.json
+.netrc
+.npmrc
+.pypirc
+.dockercfg
+.docker/config.json
+.htpasswd
+secrets/
+secret/
+.secrets/
+*.secret
+*.secrets
+secrets.yml
+secrets.yaml
+secrets.json
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+kubeconfig
+*.kubeconfig
+
+# Plataformas (tokens y vínculos locales)
+.vercel/
+.supabase/
+supabase/.temp/
+supabase/.branches/
+.render/
+.netlify/
+.firebase/
+.wrangler/
+.dev.vars
+
+# Configuración local de agentes/IDE que puede incluir permisos o tokens
+.claude/settings.local.json
+.claude/worktrees/
+.cursor/mcp.json
+.mcp.json
+.copilot/
+.gemini/
+
+# --------------------------------------------------------------
+# 2. DATOS SENSIBLES / PERSONALES
+#    (el proyecto maneja datos de ocupantes: habeas data, Ley 1581/2012)
+# --------------------------------------------------------------
+*.dump
+*.bak
+*.backup
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+*.sql.zip
+data/private/
+data/raw/
+private/
+uploads/
+exports/
+backups/
+*.csv.private
+# Si necesitas versionar datos de ejemplo, usa data/sample/ con datos ficticios
+
+# --------------------------------------------------------------
+# 3. DEPENDENCIAS Y ENTORNOS
+# --------------------------------------------------------------
+# Node / JS / TS
+node_modules/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.npm/
+.eslintcache
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
+.turbo/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.python-version.local
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.ipynb_checkpoints/
+
+# Java / JVM
+target/
+*.class
+*.jar
+.gradle/
+build/
+
+# .NET
+bin/
+obj/
+
+# Go / Rust / PHP / Ruby
+vendor/
+/pkg/
+.bundle/
+
+# --------------------------------------------------------------
+# 4. BUILD, COVERAGE Y LOGS
+# --------------------------------------------------------------
+dist/
+out/
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+playwright-report/
+test-results/
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --------------------------------------------------------------
+# 5. ARCHIVOS DE SISTEMA OPERATIVO
+# --------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*~
+
+# --------------------------------------------------------------
+# 6. EDITORES / IDE
+# --------------------------------------------------------------
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# --------------------------------------------------------------
+# 7. TEMPORALES
+# --------------------------------------------------------------
+tmp/
+temp/
+*.tmp
+*.temp
