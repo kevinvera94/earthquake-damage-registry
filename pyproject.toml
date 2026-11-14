@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: Pyflakes, C90: Complejidad ciclomática, B: Bugbear, S: Bandit (Seguridad), N: Naming
+select = ["E", "W", "F", "C90", "B", "S", "N"]
+ignore = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5  # Bloquea funciones con demasiados if/for anidados
