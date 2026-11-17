@@ -98,6 +98,7 @@ earthquake-damage-registry/
     prd/                ← requerimientos funcionales por módulo (MOD-XX)
     arch/               ← arquitectura técnica (datos, API, auth, enums, infra, RNF)
     tasks/              ← detalle de tareas por fase (FASE-XX)
+    mockup/             ← prototipo navegable de la interfaz (ver DESIGN.md)
   CLAUDE.md             ← instrucciones para el agente Claude Code
   README.md
 ```
