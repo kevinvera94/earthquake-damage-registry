@@ -252,7 +252,7 @@ Se documenta en `specs/arch/ALGORITHMS.md` el análisis de complejidad de dos op
 
 | Operación | Técnica | Complejidad |
 |---|---|---|
-| Evitar duplicados de edificación (RN-01) y de persona (RN-06) | Índice único / búsqueda por clave hash (código catastral; documento o nombre + fecha) | O(1) promedio por búsqueda frente a O(n) de recorrer la lista |
+| Evitar duplicados de edificación (RN-01) y de persona (RN-06) | Índice único B-tree de PostgreSQL (código catastral; documento o nombre normalizado + fecha) | O(log n) por búsqueda frente a O(n) de recorrer la tabla; se puede contrastar con una tabla hash en memoria, O(1) promedio |
 | Calcular el rango etario (RN-07) y agregar las cifras públicas (11.1) | Cálculo directo por persona + agregación con `GROUP BY` | O(1) por persona; O(n) por agregación completa |
 
 ---
