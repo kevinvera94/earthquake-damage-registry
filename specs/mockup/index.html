@@ -13,11 +13,11 @@
 <body>
   <a class="skip" href="#contenido">Saltar al contenido</a>
 
-  <!-- Franja superior: aviso académico obligatorio (BRIEF §11) -->
+  <!-- Franja superior: aviso académico obligatorio (BRIEF RN-12, RF-06-02) -->
   <div class="franja" role="note">
     <div class="wrap franja__in">
-      <strong>Proyecto académico con datos ficticios.</strong>
-      <span>No es un sitio oficial ni está afiliado a la Alcaldía de Santiago de Cali, la UNGRD ni el IDIGER.</span>
+      <strong>Datos ficticios con fines académicos.</strong>
+      <span>No es una fuente oficial ni está afiliado a la Alcaldía de Santiago de Cali, la UNGRD ni el IDIGER.</span>
     </div>
   </div>
 
@@ -38,7 +38,7 @@
       <nav class="nav-publica" aria-label="Principal">
         <a href="#inicio" data-ruta="inicio">Estado general</a>
         <a href="#stickers" data-ruta="stickers">Qué significa cada sticker</a>
-        <a class="btn btn--primario" href="#ingresar" data-ruta="ingresar">Ingresar</a>
+        <a class="btn btn--primario" href="#ingresar" data-ruta="ingresar">Iniciar sesión</a>
       </nav>
     </div>
   </header>
@@ -66,7 +66,6 @@
           <select id="selector-rol" aria-describedby="nota-rol">
             <option value="admin">Administrador</option>
             <option value="inspector">Inspector</option>
-            <option value="consulta">Consulta</option>
           </select>
         </label>
         <span class="usuario__nombre" id="nombre-usuario">Mariana Ortiz</span>
@@ -84,13 +83,13 @@
 
     <main id="contenido" tabindex="-1">
 
-      <!-- ===================== PÚBLICO: ESTADO GENERAL ===================== -->
+      <!-- ===================== PÚBLICO: ESTADO GENERAL (MOD-05) ===================== -->
       <section class="vista" data-vista="inicio" aria-labelledby="t-inicio">
         <div class="portada">
           <div class="wrap">
-            <p class="portada__fecha" id="fecha-corte"></p>
+            <p class="portada__fecha" id="fecha-actualizacion"></p>
             <h1 id="t-inicio">Estado de las edificaciones inspeccionadas tras el sismo</h1>
-            <p class="portada__intro">Cifras consolidadas de las inspecciones en Cali. Esta página solo muestra totales: no publica direcciones ni datos de personas.</p>
+            <p class="portada__intro">Cifras consolidadas de las inspecciones en Cali. Esta página solo muestra totales: no publica direcciones, códigos catastrales ni datos de personas.</p>
 
             <div class="total" aria-describedby="leyenda-barra">
               <p class="total__num"><span id="total-edif"></span> edificaciones inspeccionadas</p>
@@ -101,14 +100,8 @@
         </div>
 
         <div class="wrap bloque">
-          <h2>Stickers instalados</h2>
+          <h2>Stickers vigentes</h2>
           <div class="stickers" id="tarjetas-sticker"></div>
-        </div>
-
-        <div class="wrap bloque">
-          <h2>Demoliciones</h2>
-          <p class="bloque__nota">Una edificación solo se demuele cuando no es viable recuperarla y representa riesgo para la vida.</p>
-          <ol class="proceso" id="proceso-demolicion"></ol>
         </div>
 
         <div class="wrap bloque bloque--dos">
@@ -116,7 +109,7 @@
             <h2>Edificaciones por comuna</h2>
             <div class="tabla-envoltura">
               <table class="tabla" id="tabla-comunas">
-                <caption class="sr">Edificaciones inspeccionadas por comuna y color de sticker</caption>
+                <caption class="sr">Edificaciones inspeccionadas por comuna y color de sticker vigente</caption>
                 <thead><tr><th scope="col">Comuna</th><th scope="col" class="num">Rojo</th><th scope="col" class="num">Amarillo</th><th scope="col" class="num">Verde</th><th scope="col" class="num">Total</th></tr></thead>
                 <tbody></tbody>
                 <tfoot></tfoot>
@@ -124,37 +117,32 @@
             </div>
           </div>
           <div>
-            <h2>Personas registradas por edad</h2>
+            <h2>Personas registradas por rango de edad</h2>
             <div class="barras-h" id="barras-edad"></div>
-            <h2 class="mt">Cobertura de las edificaciones</h2>
-            <div class="barras-h" id="barras-cobertura"></div>
-            <p class="bloque__nota">Una edificación puede estar asegurada y además tener hipoteca o leasing, por eso estos valores no suman el total.</p>
           </div>
         </div>
       </section>
 
-      <!-- ===================== PÚBLICO: STICKERS ===================== -->
+      <!-- ===================== PÚBLICO: STICKERS (estática) ===================== -->
       <section class="vista" data-vista="stickers" aria-labelledby="t-stickers" hidden>
         <div class="wrap bloque">
           <h1 id="t-stickers">Qué significa cada sticker</h1>
-          <p class="lead">Después de la inspección, el profesional evaluador instala en la fachada un sticker que indica si la edificación se puede usar. Solo el personal autorizado puede cambiarlo, y únicamente después de una nueva inspección.</p>
+          <p class="lead">Después de la inspección, el profesional evaluador instala en la fachada un sticker que indica si la edificación se puede usar. Solo el personal autorizado puede cambiarlo, y únicamente registrando una nueva inspección: la anterior queda en el historial.</p>
           <div class="explica" id="explica-stickers"></div>
-          <h2>¿Mi edificación tiene sticker amarillo o rojo?</h2>
-          <p>El propietario, la copropiedad o la aseguradora pueden enviar estudios técnicos a la Secretaría de Gestión del Riesgo para solicitar una reinspección. Si procede, el sticker cambia y la inspección anterior queda en el historial.</p>
         </div>
       </section>
 
-      <!-- ===================== PÚBLICO: INGRESAR ===================== -->
+      <!-- ===================== PÚBLICO: INGRESAR (MOD-01) ===================== -->
       <section class="vista" data-vista="ingresar" aria-labelledby="t-ingresar" hidden>
         <div class="wrap ingreso">
           <div class="ingreso__caja">
             <h1 id="t-ingresar">Ingresar al área privada</h1>
-            <p>Para personal autorizado: administradores, inspectores y usuarios de consulta.</p>
+            <p>Para personal autorizado: administradores e inspectores.</p>
             <form id="form-ingreso" novalidate>
               <div class="campo">
-                <label for="usuario">Usuario</label>
-                <input id="usuario" name="usuario" autocomplete="username" required>
-                <p class="campo__error" id="err-usuario" hidden>Escriba su usuario.</p>
+                <label for="correo">Correo electrónico</label>
+                <input id="correo" name="correo" type="email" autocomplete="username" required>
+                <p class="campo__error" id="err-correo" hidden>Escriba su correo.</p>
               </div>
               <div class="campo">
                 <label for="clave">Contraseña</label>
@@ -164,7 +152,7 @@
               <button class="btn btn--primario btn--ancho" type="submit">Ingresar</button>
             </form>
             <p class="ingreso__nota">Las cuentas las crea el administrador del sistema. Si no tiene una, solicítela a su coordinador.</p>
-            <p class="ingreso__mock">Mockup: cualquier usuario y contraseña permiten entrar. No escriba datos reales.</p>
+            <p class="ingreso__mock">Mockup: cualquier correo y contraseña permiten entrar. No escriba datos reales.</p>
           </div>
         </div>
       </section>
@@ -173,91 +161,76 @@
       <section class="vista vista--app" data-vista="panel" aria-labelledby="t-panel" hidden>
         <div class="app-cab">
           <h1 id="t-panel">Panel</h1>
-          <a class="btn btn--primario" href="#nueva" data-permiso="registrar">Registrar inspección</a>
+          <a class="btn btn--primario" href="#nueva">Registrar edificación</a>
         </div>
         <div class="indicadores" id="indicadores-panel"></div>
-        <div class="panel-dos">
-          <section class="caja" aria-labelledby="t-cola">
-            <div class="caja__cab">
-              <h2 id="t-cola">Próximas inspecciones por prioridad</h2>
-            </div>
-            <p class="caja__nota">Orden calculado con una cola de prioridad: pesan el color del sticker, las personas vulnerables y los días sin reinspección.</p>
-            <ol class="cola" id="cola-prioridad"></ol>
-          </section>
-          <section class="caja" aria-labelledby="t-recientes">
-            <div class="caja__cab">
-              <h2 id="t-recientes">Inspecciones recientes</h2>
-              <a href="#edificaciones">Ver todas</a>
-            </div>
-            <ul class="recientes" id="recientes"></ul>
-          </section>
-        </div>
+        <section class="caja" aria-labelledby="t-recientes">
+          <div class="caja__cab">
+            <h2 id="t-recientes">Inspecciones recientes</h2>
+            <a href="#edificaciones">Ver todas las edificaciones</a>
+          </div>
+          <ul class="recientes" id="recientes"></ul>
+        </section>
       </section>
 
-      <!-- ===================== PRIVADO: CONSULTA ===================== -->
+      <!-- ===================== PRIVADO: CONSULTA (MOD-04) ===================== -->
       <section class="vista vista--app" data-vista="edificaciones" aria-labelledby="t-edif" hidden>
         <div class="app-cab">
           <h1 id="t-edif">Edificaciones</h1>
-          <a class="btn btn--primario" href="#nueva" data-permiso="registrar">Registrar inspección</a>
+          <a class="btn btn--primario" href="#nueva">Registrar edificación</a>
         </div>
 
         <form class="filtros" id="filtros" aria-label="Filtros">
           <div class="filtros__fila">
-            <div class="campo campo--buscar">
-              <label for="f-buscar">Buscar por dirección o código catastral</label>
-              <input id="f-buscar" type="search" placeholder="Ej.: Calle 5">
+            <div class="campo">
+              <label for="f-codigo">Código catastral</label>
+              <input id="f-codigo" type="search" inputmode="numeric" placeholder="Contiene…">
             </div>
             <div class="campo">
               <label for="f-comuna">Comuna</label>
               <select id="f-comuna"><option value="">Todas</option></select>
             </div>
             <div class="campo">
-              <label for="f-sticker">Sticker</label>
-              <select id="f-sticker">
-                <option value="">Todos</option>
-                <option value="rojo">Rojo</option>
-                <option value="amarillo">Amarillo</option>
-                <option value="verde">Verde</option>
-              </select>
+              <label for="f-barrio">Barrio</label>
+              <input id="f-barrio" type="search" placeholder="Contiene…">
             </div>
             <div class="campo">
-              <label for="f-demolicion">Demolición</label>
-              <select id="f-demolicion">
-                <option value="">Todas</option>
-                <option value="ninguno">Sin concepto</option>
-                <option value="concepto">Concepto aprobado</option>
-                <option value="demolida">Demolida</option>
-                <option value="escombros">Escombros retirados</option>
-              </select>
+              <label for="f-sector">Sector / uso</label>
+              <select id="f-sector"><option value="">Todos</option></select>
+            </div>
+          </div>
+
+          <div class="filtros__fila">
+            <fieldset class="grupo grupo--linea">
+              <legend>Sticker vigente</legend>
+              <label class="check"><input type="checkbox" name="f-sticker" value="rojo"> Rojo</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="amarillo"> Amarillo</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="verde"> Verde</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="sin"> Sin inspeccionar</label>
+            </fieldset>
+            <div class="campo">
+              <label for="f-desde">Última inspección desde</label>
+              <input id="f-desde" type="date">
+            </div>
+            <div class="campo">
+              <label for="f-hasta">Última inspección hasta</label>
+              <input id="f-hasta" type="date">
             </div>
           </div>
 
           <details class="filtros__mas">
             <summary>Más filtros: cobertura y personas</summary>
             <div class="filtros__fila">
-              <fieldset class="grupo">
-                <legend>Cobertura</legend>
-                <label class="check"><input type="checkbox" id="f-asegurada"> Asegurada</label>
-                <label class="check"><input type="checkbox" id="f-noasegurada"> No asegurada</label>
-                <label class="check"><input type="checkbox" id="f-hipoteca"> Con hipoteca</label>
-                <label class="check"><input type="checkbox" id="f-leasing"> Con leasing</label>
-              </fieldset>
-              <fieldset class="grupo">
-                <legend>Personas asociadas</legend>
-                <label class="check"><input type="checkbox" id="f-ninos"> Con niños menores de 10</label>
-                <label class="check"><input type="checkbox" id="f-mayores"> Con adultos de 60 o más</label>
-                <label class="check"><input type="checkbox" id="f-discapacidad"> Con personas con discapacidad</label>
-                <label class="check"><input type="checkbox" id="f-arrendatarios"> Con arrendatarios</label>
-              </fieldset>
-              <div class="campo">
-                <label for="f-poblacion">Tipo de población</label>
-                <select id="f-poblacion">
-                  <option value="">Todas</option>
-                  <option value="Civil">Civil</option>
-                  <option value="Militar">Militar</option>
-                  <option value="Carcelaria">Carcelaria</option>
-                </select>
-              </div>
+              <div class="campo"><label for="f-asegurada">Asegurada</label><select id="f-asegurada" data-tri></select></div>
+              <div class="campo"><label for="f-hipoteca">Con hipoteca</label><select id="f-hipoteca" data-tri></select></div>
+              <div class="campo"><label for="f-leasing">Con leasing</label><select id="f-leasing" data-tri></select></div>
+            </div>
+            <p class="campo__ayuda">Filtros de personas: la edificación aparece si una misma persona cumple todos los que elija.</p>
+            <div class="filtros__fila">
+              <div class="campo"><label for="f-vinculo">Vínculo</label><select id="f-vinculo"><option value="">Todos</option></select></div>
+              <div class="campo"><label for="f-rango">Rango etario</label><select id="f-rango"><option value="">Todos</option></select></div>
+              <div class="campo"><label for="f-condicion">Condición especial</label><select id="f-condicion"><option value="">Todas</option></select></div>
+              <div class="campo"><label for="f-poblacion">Tipo de población</label><select id="f-poblacion"><option value="">Todas</option></select></div>
             </div>
           </details>
 
@@ -269,15 +242,16 @@
 
         <div class="tabla-envoltura">
           <table class="tabla tabla--datos" id="tabla-edif">
-            <caption class="sr">Resultados de la consulta de edificaciones</caption>
+            <caption class="sr">Resultados de la consulta de edificaciones, ordenados por la última inspección más reciente</caption>
             <thead>
               <tr>
-                <th scope="col"><button class="orden" data-orden="direccion">Dirección</button></th>
-                <th scope="col"><button class="orden" data-orden="comuna">Comuna</button></th>
-                <th scope="col"><button class="orden" data-orden="sticker">Sticker</button></th>
-                <th scope="col"><button class="orden" data-orden="fecha">Última inspección</button></th>
-                <th scope="col" class="num"><button class="orden" data-orden="personas">Personas</button></th>
-                <th scope="col">Cobertura</th>
+                <th scope="col">Código catastral</th>
+                <th scope="col">Dirección</th>
+                <th scope="col">Comuna y barrio</th>
+                <th scope="col">Sector</th>
+                <th scope="col">Sticker</th>
+                <th scope="col">Última inspección</th>
+                <th scope="col" class="num">Personas</th>
                 <th scope="col"><span class="sr">Acciones</span></th>
               </tr>
             </thead>
@@ -287,181 +261,68 @@
         <nav class="paginas" id="paginas" aria-label="Páginas de resultados"></nav>
       </section>
 
-      <!-- ===================== PRIVADO: FICHA ===================== -->
+      <!-- ===================== PRIVADO: FICHA (RF-04-03) ===================== -->
       <section class="vista vista--app" data-vista="ficha" aria-labelledby="t-ficha" hidden>
         <div id="ficha"></div>
       </section>
 
-      <!-- ===================== PRIVADO: NUEVA INSPECCIÓN ===================== -->
+      <!-- ===================== PRIVADO: REGISTRAR EDIFICACIÓN (3 pasos) ===================== -->
       <section class="vista vista--app" data-vista="nueva" aria-labelledby="t-nueva" hidden>
         <div class="app-cab">
-          <h1 id="t-nueva">Registrar inspección</h1>
+          <h1 id="t-nueva">Registrar edificación</h1>
         </div>
         <ol class="pasos" id="pasos"></ol>
 
         <form id="form-insp" class="caja form-insp" novalidate>
-          <!-- Paso 1 -->
+          <!-- Paso 1: edificación y cobertura (RF-02-01, RF-02-02) -->
           <fieldset class="paso" data-paso="1">
-            <legend>Identificación de la edificación</legend>
-            <div class="rejilla">
-              <div class="campo">
-                <label for="i-catastral">Código catastral</label>
-                <input id="i-catastral" inputmode="numeric" aria-describedby="ayuda-catastral">
-                <p class="campo__ayuda" id="ayuda-catastral">Si la edificación ya existe, la inspección se agrega a su historial. Pruebe con 7600101020041.</p>
-                <p class="aviso aviso--info" id="aviso-duplicado" hidden></p>
-              </div>
-              <div class="campo">
-                <label for="i-direccion">Dirección</label>
-                <input id="i-direccion" placeholder="Ej.: Carrera 24 # 9-15">
-              </div>
-              <div class="campo">
-                <label for="i-comuna">Comuna</label>
-                <select id="i-comuna"></select>
-              </div>
-              <div class="campo">
-                <label for="i-barrio">Barrio</label>
-                <input id="i-barrio">
-              </div>
-              <fieldset class="grupo grupo--linea">
-                <legend>Zona</legend>
-                <label class="check"><input type="radio" name="zona" value="urbana" checked> Urbana</label>
-                <label class="check"><input type="radio" name="zona" value="rural"> Rural</label>
-              </fieldset>
-              <div class="campo">
-                <label for="i-uso">Uso predominante</label>
-                <select id="i-uso"></select>
-              </div>
-              <div class="campo">
-                <label for="i-pisos">Número de pisos</label>
-                <input id="i-pisos" type="number" min="1" max="60" value="2">
-              </div>
-              <div class="campo">
-                <label for="i-sistema">Sistema estructural</label>
-                <select id="i-sistema"></select>
-              </div>
+            <legend>Edificación y cobertura</legend>
+            <div class="campo">
+              <label for="w-catastral">Código catastral</label>
+              <input id="w-catastral" inputmode="numeric" aria-describedby="ayuda-catastral">
+              <p class="campo__ayuda" id="ayuda-catastral">Primero se busca el código. Si la edificación ya existe, la reinspección se registra desde su ficha. Pruebe con 7600101020041.</p>
+              <p class="aviso aviso--info" id="aviso-duplicado" hidden></p>
             </div>
+            <div id="w-edif"></div>
           </fieldset>
 
-          <!-- Paso 2 -->
+          <!-- Paso 2: inspección (RF-02-04) -->
           <fieldset class="paso" data-paso="2" hidden>
-            <legend>Inspección rápida</legend>
-            <div class="rejilla">
-              <div class="campo">
-                <label for="i-tipo">Tipo de inspección</label>
-                <select id="i-tipo"><option>Completa</option><option>Parcial</option><option>Exterior solamente</option></select>
-              </div>
-              <div class="campo">
-                <label for="i-fecha">Fecha y hora</label>
-                <input id="i-fecha" type="datetime-local">
-              </div>
-            </div>
-            <fieldset class="grupo">
-              <legend>Sticker instalado</legend>
-              <div class="elige-sticker" id="elige-sticker"></div>
-            </fieldset>
+            <legend>Inspección</legend>
+            <div id="w-insp"></div>
           </fieldset>
 
-          <!-- Paso 3 -->
+          <!-- Paso 3: personas ocupantes (MOD-03) -->
           <fieldset class="paso" data-paso="3" hidden>
-            <legend>Personas asociadas</legend>
-            <p class="campo__ayuda">Registre una a una las personas propietarias y arrendatarias. La edad y el rango se calculan con la fecha de nacimiento.</p>
+            <legend>Personas ocupantes</legend>
+            <p class="campo__ayuda">Registre una a una las personas propietarias y arrendatarias. La edad y el rango etario se calculan con la fecha de nacimiento. Puede dejar este paso vacío y agregarlas después desde la ficha.</p>
             <div class="tabla-envoltura">
               <table class="tabla" id="tabla-personas-nueva">
-                <thead><tr><th scope="col">Nombre</th><th scope="col">Vínculo</th><th scope="col">Rango de edad</th><th scope="col">Condición</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
-                <tbody><tr class="vacio"><td colspan="5">Todavía no hay personas. Agregue la primera con el formulario.</td></tr></tbody>
+                <thead><tr><th scope="col">Nombre</th><th scope="col">Documento</th><th scope="col">Vínculo</th><th scope="col">Rango etario</th><th scope="col">Condición</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
+                <tbody></tbody>
               </table>
             </div>
-            <div class="sub-form">
-              <h3>Agregar persona</h3>
-              <div class="rejilla">
-                <div class="campo"><label for="p-nombres">Nombres</label><input id="p-nombres"><p class="campo__error" id="err-pnombres" hidden>Escriba los nombres.</p></div>
-                <div class="campo"><label for="p-apellidos">Apellidos</label><input id="p-apellidos"></div>
-                <div class="campo"><label for="p-tipodoc">Tipo de documento</label><select id="p-tipodoc"></select></div>
-                <div class="campo"><label for="p-doc">Número de documento</label><input id="p-doc" inputmode="numeric"></div>
-                <div class="campo"><label for="p-nac">Fecha de nacimiento</label><input id="p-nac" type="date"><p class="campo__ayuda" id="p-rango" aria-live="polite"></p></div>
-                <div class="campo"><label for="p-vinculo">Vínculo con el inmueble</label><select id="p-vinculo"></select></div>
-                <div class="campo"><label for="p-genero">Género</label><select id="p-genero"><option>Femenino</option><option>Masculino</option><option>Transgénero</option></select></div>
-                <div class="campo"><label for="p-poblacion">Tipo de población</label><select id="p-poblacion"><option>Civil</option><option>Militar</option><option>Carcelaria</option></select></div>
-                <div class="campo"><label for="p-estado">Estado tras el sismo</label><select id="p-estado"><option>Ileso</option><option>Afectado</option><option>Herido</option><option>Fallecido</option></select></div>
-                <fieldset class="grupo">
-                  <legend>Condición especial</legend>
-                  <label class="check"><input type="checkbox" name="p-cond" value="Discapacidad"> Discapacidad</label>
-                  <label class="check"><input type="checkbox" name="p-cond" value="Persona vulnerable"> Persona vulnerable</label>
-                  <label class="check"><input type="checkbox" name="p-cond" value="Necesidad especial"> Necesidad especial</label>
-                </fieldset>
-              </div>
-              <button class="btn btn--secundario" type="button" id="btn-agregar-persona">Agregar persona</button>
-            </div>
-          </fieldset>
-
-          <!-- Paso 4 -->
-          <fieldset class="paso" data-paso="4" hidden>
-            <legend>Cobertura del inmueble</legend>
-            <p class="campo__ayuda">Cada opción es independiente: una edificación puede estar asegurada y tener hipoteca al mismo tiempo.</p>
-            <div class="coberturas">
-              <div class="cobertura">
-                <label class="check check--grande"><input type="checkbox" id="c-asegurada" data-revela="r-asegurada"> Está asegurada</label>
-                <div class="rejilla" id="r-asegurada" hidden>
-                  <div class="campo"><label for="c-aseguradora">Aseguradora</label><input id="c-aseguradora"></div>
-                  <div class="campo"><label for="c-poliza">Número de póliza (opcional)</label><input id="c-poliza"></div>
-                </div>
-              </div>
-              <div class="cobertura">
-                <label class="check check--grande"><input type="checkbox" id="c-hipoteca" data-revela="r-hipoteca"> Tiene hipoteca</label>
-                <div class="rejilla" id="r-hipoteca" hidden>
-                  <div class="campo"><label for="c-entidad-h">Entidad financiera (opcional)</label><input id="c-entidad-h"></div>
-                </div>
-              </div>
-              <div class="cobertura">
-                <label class="check check--grande"><input type="checkbox" id="c-leasing" data-revela="r-leasing"> Está en leasing</label>
-                <div class="rejilla" id="r-leasing" hidden>
-                  <div class="campo"><label for="c-entidad-l">Entidad o locador (opcional)</label><input id="c-entidad-l"></div>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-
-          <!-- Paso 5 -->
-          <fieldset class="paso" data-paso="5" hidden>
-            <legend>Evaluación en detalle</legend>
-            <p class="aviso aviso--info" id="aviso-detalle"></p>
-            <div class="eval" id="evaluaciones"></div>
-            <div class="global" id="global" aria-live="polite"></div>
-
-            <div class="sub-form">
-              <h3>Daño en columnas o muros portantes (piso más afectado)</h3>
-              <p class="campo__ayuda">Los porcentajes deben sumar 100 %.</p>
-              <div class="porcentajes" id="porcentajes"></div>
-              <p class="suma" id="suma-pct" aria-live="polite"></p>
-            </div>
+            <p class="mt-chico"><button class="btn btn--secundario" type="button" id="btn-agregar-persona">Agregar persona</button></p>
           </fieldset>
 
           <div class="form-insp__pie">
             <button class="btn btn--fantasma" type="button" id="btn-anterior">Anterior</button>
             <button class="btn btn--primario" type="button" id="btn-siguiente">Siguiente</button>
-            <button class="btn btn--primario" type="submit" id="btn-registrar" hidden>Registrar inspección</button>
+            <button class="btn btn--primario" type="submit" id="btn-registrar" hidden>Registrar</button>
           </div>
         </form>
       </section>
 
-      <!-- ===================== PRIVADO: REPORTES ===================== -->
-      <section class="vista vista--app" data-vista="reportes" aria-labelledby="t-reportes" hidden>
-        <div class="app-cab">
-          <h1 id="t-reportes">Reportes</h1>
-        </div>
-        <div class="reportes" id="reportes"></div>
-      </section>
-
-      <!-- ===================== PRIVADO: USUARIOS ===================== -->
+      <!-- ===================== PRIVADO: USUARIOS (RF-01-04, RF-01-05) ===================== -->
       <section class="vista vista--app" data-vista="usuarios" aria-labelledby="t-usuarios" hidden>
         <div class="app-cab">
           <h1 id="t-usuarios">Usuarios</h1>
           <button class="btn btn--primario" type="button" id="btn-crear-usuario">Crear usuario</button>
         </div>
-        <p class="lead lead--app">Solo el administrador crea cuentas. No existe registro público.</p>
+        <p class="lead lead--app">Solo el administrador crea cuentas. No existe registro público. Los usuarios no se borran: se desactivan.</p>
         <div class="tabla-envoltura">
           <table class="tabla tabla--datos" id="tabla-usuarios">
-            <thead><tr><th scope="col">Nombre</th><th scope="col">Usuario</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
+            <thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -481,20 +342,71 @@
   <footer class="pie" id="pie">
     <div class="wrap pie__in">
       <p><strong>Registro de Edificaciones</strong>. Proyecto del curso Análisis de Algoritmos, desarrollado con metodología SDD.</p>
-      <p>Todos los datos son ficticios. Este sitio no es una fuente oficial.</p>
+      <p>Datos ficticios con fines académicos. Este sitio no es una fuente oficial.</p>
     </div>
   </footer>
 
   <!-- Diálogo: crear usuario -->
   <dialog class="dialogo" id="dlg-usuario" aria-labelledby="t-dlg-usuario">
-    <form method="dialog" id="form-usuario">
+    <form id="form-usuario" novalidate>
       <h2 id="t-dlg-usuario">Crear usuario</h2>
       <div class="campo"><label for="u-nombre">Nombre completo</label><input id="u-nombre" required></div>
-      <div class="campo"><label for="u-usuario">Usuario</label><input id="u-usuario" required></div>
-      <div class="campo"><label for="u-rol">Rol</label><select id="u-rol"><option>Inspector</option><option>Consulta</option><option>Administrador</option></select></div>
+      <div class="campo"><label for="u-correo">Correo electrónico</label><input id="u-correo" type="email" required></div>
+      <div class="campo"><label for="u-rol">Rol</label><select id="u-rol"><option>Inspector</option><option>Administrador</option></select></div>
+      <div class="campo"><label for="u-clave">Contraseña inicial</label><input id="u-clave" type="password" autocomplete="new-password" required></div>
       <div class="dialogo__pie">
-        <button class="btn btn--fantasma" value="cancelar" formnovalidate>Cancelar</button>
-        <button class="btn btn--primario" value="crear" id="btn-confirmar-usuario">Crear usuario</button>
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Crear usuario</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: editar edificación (RF-02-03) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-edif" aria-labelledby="t-dlg-edif">
+    <form id="form-edif" novalidate>
+      <h2 id="t-dlg-edif">Editar edificación</h2>
+      <p class="campo__ayuda" id="de-codigo"></p>
+      <div id="de-campos"></div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: nueva inspección o reinspección desde la ficha (RF-02-04) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-insp" aria-labelledby="t-dlg-insp">
+    <form id="form-dlg-insp" novalidate>
+      <h2 id="t-dlg-insp">Registrar inspección</h2>
+      <p class="campo__ayuda">La inspección no se puede editar ni borrar después. Si hay un error, se registra una nueva.</p>
+      <div id="di-campos"></div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Registrar inspección</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: agregar o editar persona (RF-03-01, RF-03-04) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-persona" aria-labelledby="t-dlg-persona">
+    <form id="form-persona" novalidate>
+      <h2 id="t-dlg-persona">Agregar persona</h2>
+      <p class="aviso aviso--error" id="pe-dup" hidden></p>
+      <div class="rejilla">
+        <div class="campo"><label for="pe-nombres">Nombres</label><input id="pe-nombres"></div>
+        <div class="campo"><label for="pe-apellidos">Apellidos</label><input id="pe-apellidos"></div>
+        <div class="campo"><label for="pe-tipodoc">Tipo de documento</label><select id="pe-tipodoc"></select></div>
+        <div class="campo" id="pe-doc-campo"><label for="pe-doc">Número de documento</label><input id="pe-doc" inputmode="numeric"></div>
+        <div class="campo"><label for="pe-nac">Fecha de nacimiento</label><input id="pe-nac" type="date"><p class="campo__ayuda" id="pe-rango" aria-live="polite"></p></div>
+        <div class="campo"><label for="pe-vinculo">Vínculo con el inmueble</label><select id="pe-vinculo"></select></div>
+        <div class="campo"><label for="pe-poblacion">Tipo de población</label><select id="pe-poblacion"></select></div>
+        <fieldset class="grupo" id="pe-condiciones">
+          <legend>Condición especial</legend>
+        </fieldset>
+      </div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit" id="pe-guardar">Agregar persona</button>
       </div>
     </form>
   </dialog>

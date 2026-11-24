@@ -1,5 +1,5 @@
 /* ==========================================================
-   Registro de Edificaciones — lógica del mockup
+   Registro de Edificaciones — lógica del mockup (alcance v1.0)
    Todo es ficticio: los datos se generan con una semilla fija
    para que el mockup siempre muestre lo mismo.
    ========================================================== */
@@ -13,6 +13,7 @@ const pct = (n, total) => (total ? Math.round((n / total) * 1000) / 10 : 0).toLo
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pad = (n, d) => String(n).padStart(d, "0");
 const HOY = new Date();
+const FECHA_SISMO = new Date("2026-08-10T00:00:00");
 
 // Generador pseudoaleatorio con semilla (mulberry32): mismos datos en cada carga
 function semilla(a) {
@@ -34,44 +35,39 @@ function pesado(pares) {
 }
 
 function edad(nacimiento, ref = HOY) {
-  const n = new Date(nacimiento);
+  const n = new Date(nacimiento + "T00:00:00");
   let e = ref.getFullYear() - n.getFullYear();
   const m = ref.getMonth() - n.getMonth();
   if (m < 0 || (m === 0 && ref.getDate() < n.getDate())) e--;
   return e;
 }
-// Rangos excluyentes (BRIEF §10.3, supuesto S-08)
+// Rangos excluyentes y calculados (BRIEF §8.3, RN-07)
+const RANGOS = ["Niños menores de 10", "Niños y adolescentes", "Adultos", "Adultos mayores"];
 function rangoEtario(e) {
-  if (e < 10) return "0 a 9 años";
-  if (e < 18) return "10 a 17 años";
-  if (e < 60) return "18 a 59 años";
-  return "60 años o más";
+  if (e < 10) return RANGOS[0];
+  if (e < 18) return RANGOS[1];
+  if (e < 60) return RANGOS[2];
+  return RANGOS[3];
 }
-const RANGOS = ["0 a 9 años", "10 a 17 años", "18 a 59 años", "60 años o más"];
 
 const fechaLarga = (d) => new Date(d).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
 const fechaCorta = (d) => new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
-const diasDesde = (d) => Math.max(0, Math.floor((HOY - new Date(d)) / 86400000));
+const fechaHora = (d) => new Date(d).toLocaleString("es-CO", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+// Compara nombres sin distinguir mayúsculas ni tildes (RF-03-02)
+const normalizar = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 
-/* ---------------- Catálogos ---------------- */
+/* ---------------- Catálogos (BRIEF §8) ---------------- */
 const STICKER = {
   rojo: { nombre: "Rojo", titulo: "Inseguro", texto: "No se puede ingresar ni habitar. Riesgo para la vida." },
   amarillo: { nombre: "Amarillo", titulo: "Uso restringido", texto: "Solo se permite el ingreso a zonas autorizadas o por tiempo limitado." },
   verde: { nombre: "Verde", titulo: "Sin restricción", texto: "La edificación puede usarse con normalidad." },
 };
-const ORDEN_STICKER = { rojo: 3, amarillo: 2, verde: 1 };
+const ORDEN_COLORES = ["rojo", "amarillo", "verde"];
 
-const NIVELES_IDIGER = ["", "Habitable", "Uso restringido", "No habitable", "Peligro de colapso"];
-const NIVEL_A_STICKER = { 1: "verde", 2: "amarillo", 3: "rojo", 4: "rojo" };
-const EVALUACIONES = [
-  ["A", "Estado general"],
-  ["B", "Problemas geotécnicos"],
-  ["C", "Elementos no estructurales"],
-  ["D", "Elementos estructurales"],
-  ["E", "Problemas del entorno"],
-];
-
-const COMUNAS = {
+const COMUNAS = [...Array.from({ length: 22 }, (_, i) => String(i + 1)), "Rural"];
+const comunaTxt = (c) => (c === "Rural" ? "Rural" : `Comuna ${c}`);
+// Barrios ficticios solo para las comunas que usa el generador
+const BARRIOS = {
   1: ["Terrón Colorado", "Aguacatal", "Vista Hermosa"],
   2: ["San Vicente", "Granada", "Santa Mónica", "Versalles"],
   3: ["San Antonio", "El Peñón", "San Pedro", "La Merced"],
@@ -84,175 +80,138 @@ const COMUNAS = {
   18: ["Meléndez", "Los Chorros", "Alto Jordán"],
   19: ["San Fernando", "El Lido", "Tequendama", "Cristales"],
   20: ["Siloé", "Lleras Camargo", "Belén", "Tierra Blanca"],
+  Rural: ["Pance", "La Buitrera", "Montebello", "Los Andes"],
 };
-const PESO_COMUNA = [[1, 6], [2, 11], [3, 13], [4, 6], [9, 10], [10, 9], [11, 6], [13, 7], [17, 6], [18, 8], [19, 12], [20, 14]];
+const PESO_COMUNA = [["1", 6], ["2", 11], ["3", 13], ["4", 6], ["9", 10], ["10", 9], ["11", 6], ["13", 7], ["17", 6], ["18", 8], ["19", 12], ["20", 14], ["Rural", 3]];
 
-const USOS = ["Residencial", "Comercial", "Educacional", "Salud", "Hotelero", "Oficinas", "Industrial", "Institucional", "Bodegas", "Estacionamientos", "Otros"];
-const SISTEMAS = ["Mampostería confinada", "Mampostería no reforzada", "Mampostería reforzada", "Concreto reforzado: pórticos", "Concreto reforzado: muros", "Acero", "Madera", "Bahareque o tapia", "Mixta", "Precario"];
-const PERIODOS = ["Antes de 1960", "1960 a 1985", "1986 a 1999", "2000 a 2011", "Desde 2012"];
-const TIPOS_DOC = ["Registro civil", "Tarjeta de identidad", "Cédula de ciudadanía", "Cédula de extranjería", "Pasaporte", "Menor sin identificación", "Adulto sin identificación", "No informa", "NIT", "Otro"];
-const VINCULOS = ["Propietario", "Arrendatario", "Poseedor", "Ocupante", "No informa"];
-const ASEGURADORAS = ["Seguros Andinos del Valle", "Aseguradora Pacífico Sur", "Previsión Farallones", "Seguros La Ermita"];
-const ENTIDADES = ["Banco Cordillera", "Cooperativa Río Cali", "Banco del Occidente Sur", "Fondo Vivienda Valle"];
+const SECTORES = ["Vivienda", "Comercial", "Salud", "Educación", "Infraestructura", "Logística y suministros", "Economía"];
+const TIPOS_DOC = ["Cédula de ciudadanía", "Tarjeta de identidad", "Registro civil", "Cédula de extranjería", "Pasaporte", "Sin documento"];
+const VINCULOS = ["Propietario", "Arrendatario"];
+const CONDICIONES = ["Discapacidad", "Persona vulnerable", "Necesidad especial"];
+const POBLACIONES = ["Civil", "Militar", "Carcelaria"];
+const OBSERVACIONES = ["", "", "", "Fisuras en muros de fachada.", "Desprendimiento de acabados en el primer piso.", "Daño en cubierta; se recomienda no usar el último piso.", "Grietas diagonales en muros portantes.", "Sin daños visibles en elementos estructurales."];
 
-const NOMBRES_F = ["María", "Luisa", "Valentina", "Daniela", "Camila", "Sofía", "Ana", "Carolina", "Gloria", "Martha", "Paola", "Isabella", "Mariana", "Diana", "Rosa", "Lucía", "Natalia", "Sara"];
-const NOMBRES_M = ["Juan", "Carlos", "Andrés", "Santiago", "Luis", "Jorge", "Felipe", "Diego", "Mateo", "Samuel", "José", "Óscar", "Héctor", "Julián", "Miguel", "Sebastián", "Tomás", "Esteban"];
+const NOMBRES = ["María", "Luisa", "Valentina", "Daniela", "Camila", "Sofía", "Ana", "Carolina", "Gloria", "Martha", "Juan", "Carlos", "Andrés", "Santiago", "Luis", "Jorge", "Felipe", "Diego", "Mateo", "Samuel", "José", "Óscar", "Héctor", "Julián"];
 const APELLIDOS = ["García", "Rodríguez", "Martínez", "López", "González", "Hernández", "Gómez", "Díaz", "Vargas", "Ramírez", "Castillo", "Mosquera", "Valencia", "Caicedo", "Rengifo", "Ospina", "Zapata", "Cuero", "Angulo", "Bermúdez", "Quintero", "Muñoz", "Restrepo", "Hurtado"];
 
 const USUARIOS = [
-  { nombre: "Mariana Ortiz", usuario: "mortiz", rol: "Administrador", activo: true },
-  { nombre: "Laura Méndez", usuario: "lmendez", rol: "Inspector", codigo: "P3-0142", activo: true },
-  { nombre: "Andrés Cárdenas", usuario: "acardenas", rol: "Inspector", codigo: "P2-0087", activo: true },
-  { nombre: "Paola Quintero", usuario: "pquintero", rol: "Inspector", codigo: "P4-0213", activo: true },
-  { nombre: "Julián Rengifo", usuario: "jrengifo", rol: "Inspector", codigo: "P3-0175", activo: true },
-  { nombre: "Catalina Mejía", usuario: "cmejia", rol: "Inspector", codigo: "P5-0301", activo: false },
-  { nombre: "Felipe Arango", usuario: "farango", rol: "Consulta", activo: true },
+  { nombre: "Mariana Ortiz", correo: "mortiz@ejemplo.test", rol: "Administrador", activo: true },
+  { nombre: "Laura Méndez", correo: "lmendez@ejemplo.test", rol: "Inspector", activo: true },
+  { nombre: "Andrés Cárdenas", correo: "acardenas@ejemplo.test", rol: "Inspector", activo: true },
+  { nombre: "Paola Quintero", correo: "pquintero@ejemplo.test", rol: "Inspector", activo: true },
+  { nombre: "Julián Rengifo", correo: "jrengifo@ejemplo.test", rol: "Inspector", activo: true },
+  { nombre: "Catalina Mejía", correo: "cmejia@ejemplo.test", rol: "Inspector", activo: false },
 ];
 const INSPECTORES = USUARIOS.filter((u) => u.rol === "Inspector");
 
+// Dos roles (BRIEF §6, PRD §2): el inspector puede todo salvo gestionar usuarios
 const ROLES = {
-  admin: { etiqueta: "Administrador", usuario: "Mariana Ortiz", permisos: ["panel", "edificaciones", "ficha", "registrar", "reportes", "usuarios", "demoler", "exportar"] },
-  inspector: { etiqueta: "Inspector", usuario: "Laura Méndez", permisos: ["panel", "edificaciones", "ficha", "registrar", "exportar"] },
-  consulta: { etiqueta: "Consulta", usuario: "Felipe Arango", permisos: ["panel", "edificaciones", "ficha", "reportes", "exportar"] },
+  admin: { etiqueta: "Administrador", usuario: "Mariana Ortiz", permisos: ["panel", "edificaciones", "ficha", "registrar", "usuarios"] },
+  inspector: { etiqueta: "Inspector", usuario: "Laura Méndez", permisos: ["panel", "edificaciones", "ficha", "registrar"] },
 };
 
-const ESTADOS_DEMOLICION = ["ninguno", "concepto", "demolida", "escombros"];
-const TXT_DEMOLICION = { ninguno: "Sin concepto", concepto: "Concepto aprobado", demolida: "Demolida", escombros: "Escombros retirados" };
-
-/* ---------------- Datos ficticios ---------------- */
+/* ---------------- Datos ficticios (MOD-06) ---------------- */
 function fechaAleatoria(desde, hasta) {
   const a = new Date(desde).getTime(), b = new Date(hasta).getTime();
   return new Date(a + rnd() * (b - a));
 }
 
-function generarPersona(stickerFinal, vinculoHogar) {
+function generarPersona(vinculoHogar) {
   const rango = pesado([[0, 12], [1, 16], [2, 54], [3, 18]]);
   const [min, max] = [[0, 9], [10, 17], [18, 59], [60, 92]][rango];
   const anios = entre(min, max);
-  const nac = new Date(2026, entre(0, 11), entre(1, 28));
+  const nac = new Date(2026, entre(0, 10), entre(1, 28));
   nac.setFullYear(nac.getFullYear() - anios - 1);
-  const genero = pesado([["Femenino", 51], ["Masculino", 48.5], ["Transgénero", 0.5]]);
-  const nombre = uno(genero === "Masculino" ? NOMBRES_M : NOMBRES_F);
-  const e = edad(nac);
-  let tipoDoc = e < 7 ? "Registro civil" : e < 18 ? "Tarjeta de identidad" : "Cédula de ciudadanía";
-  if (rnd() < 0.03) tipoDoc = e < 18 ? "Menor sin identificación" : "Adulto sin identificación";
+  const nacimiento = nac.toISOString().slice(0, 10);
+  const e = edad(nacimiento);
+  let tipoDoc = e < 7 ? "Registro civil" : e < 18 ? "Tarjeta de identidad" : pesado([["Cédula de ciudadanía", 97], ["Cédula de extranjería", 2], ["Pasaporte", 1]]);
+  if (rnd() < 0.03) tipoDoc = "Sin documento";
   const condiciones = [];
   if (rnd() < 0.045) condiciones.push("Discapacidad");
   if (rnd() < 0.06 || e >= 75) condiciones.push("Persona vulnerable");
   if (rnd() < 0.02) condiciones.push("Necesidad especial");
   return {
-    nombres: nombre,
+    nombres: uno(NOMBRES),
     apellidos: `${uno(APELLIDOS)} ${uno(APELLIDOS)}`,
     tipoDoc,
-    documento: tipoDoc.includes("sin") ? "" : String(entre(10000000, 1199999999)),
-    nacimiento: nac.toISOString().slice(0, 10),
-    vinculo: e < 18 ? vinculoHogar : (rnd() < 0.9 ? vinculoHogar : uno(VINCULOS)),
-    genero,
+    documento: tipoDoc === "Sin documento" ? "" : String(entre(10000000, 1199999999)),
+    nacimiento,
+    vinculo: e < 18 || rnd() < 0.9 ? vinculoHogar : uno(VINCULOS),
     condiciones,
     poblacion: pesado([["Civil", 980], ["Militar", 15], ["Carcelaria", 5]]),
-    estado: pesado([["Ileso", 80], ["Afectado", 15], ["Herido", 4.5], ["Fallecido", 0.5]]),
-    presencia: rnd() < 0.7,
-    alojamiento: stickerFinal === "rojo" ? "Evacuado fuera de su residencia" : "Lugar habitual de su residencia",
   };
 }
 
 function generarEdificaciones(n) {
   const lista = [];
   for (let i = 0; i < n; i++) {
-    const comuna = i === 0 ? 1 : pesado(PESO_COMUNA);
-    const stickerFinal = pesado([["rojo", 26.5], ["amarillo", 38.4], ["verde", 35.1]]);
-    const uso = pesado([["Residencial", 72], ["Comercial", 15], ["Educacional", 2.5], ["Salud", 1.5], ["Oficinas", 3], ["Institucional", 1.5], ["Bodegas", 2], ["Industrial", 1], ["Hotelero", 1], ["Otros", 0.5]]);
-
-    // Historial de inspecciones: la primera es la rápida; las siguientes son reinspecciones
-    const nInsp = stickerFinal === "verde" ? pesado([[1, 85], [2, 15]]) : pesado([[1, 55], [2, 35], [3, 10]]);
+    const comuna = i === 0 ? "1" : pesado(PESO_COMUNA);
+    const sector = pesado([["Vivienda", 70], ["Comercial", 15], ["Educación", 3], ["Salud", 2], ["Infraestructura", 4], ["Logística y suministros", 3], ["Economía", 3]]);
+    // Una parte queda sin inspeccionar; las demás tienen una o más inspecciones
+    const stickerFinal = i === 0 ? "amarillo" : pesado([[null, 3], ["rojo", 26.5], ["amarillo", 38.4], ["verde", 35.1]]);
+    const nInsp = !stickerFinal ? 0 : stickerFinal === "verde" ? pesado([[1, 85], [2, 15]]) : pesado([[1, 55], [2, 35], [3, 10]]);
     const inspecciones = [];
-    let fecha = fechaAleatoria("2026-08-11", nInsp > 1 ? "2026-09-10" : "2026-11-08");
+    let fecha = fechaAleatoria("2026-08-11", nInsp > 1 ? "2026-09-10" : "2026-11-20");
     for (let k = 0; k < nInsp; k++) {
-      const ultima = k === nInsp - 1;
+      const ultimaInsp = k === nInsp - 1;
       // Antes de una reinspección el sticker era igual o peor
-      const s = ultima ? stickerFinal : uno(["rojo", "amarillo", stickerFinal].filter((x) => ORDEN_STICKER[x] >= ORDEN_STICKER[stickerFinal]));
-      const detallada = s !== "verde";
-      const nivel = s === "verde" ? 1 : s === "amarillo" ? 2 : pesado([[3, 70], [4, 30]]);
-      const evals = EVALUACIONES.map(() => entre(1, nivel));
-      evals[entre(0, 4)] = nivel; // la más crítica define la global
-      const insp = USUARIOS.length && uno(INSPECTORES);
+      const peores = ORDEN_COLORES.slice(0, ORDEN_COLORES.indexOf(stickerFinal) + 1);
       inspecciones.push({
         fecha: fecha.toISOString(),
-        fase: k === 0 ? "Inspección rápida" + (detallada ? " y evaluación en detalle" : "") : "Reinspección",
-        tipo: pesado([["Completa", 70], ["Parcial", 20], ["Exterior solamente", 10]]),
-        sticker: s,
-        nivel,
-        evals,
-        inspector: insp.nombre,
-        codigoInspector: insp.codigo,
-        estado: ultima ? (rnd() < 0.86 ? "Validada" : "Por validar") : "Validada",
+        sticker: ultimaInsp ? stickerFinal : uno(peores),
+        observaciones: uno(OBSERVACIONES),
+        inspector: uno(INSPECTORES).nombre,
       });
       fecha = new Date(fecha.getTime() + entre(12, 50) * 86400000);
       if (fecha > HOY) fecha = new Date(HOY.getTime() - entre(1, 5) * 86400000);
     }
 
-    let demolicion = "ninguno";
-    if (stickerFinal === "rojo" && rnd() < 0.04) {
-      demolicion = "concepto";
-      if (rnd() < 0.15) demolicion = rnd() < 0.4 ? "escombros" : "demolida";
-    }
-
     const vinculoHogar = rnd() < 0.62 ? "Propietario" : "Arrendatario";
-    const nPersonas = uso === "Residencial" ? pesado([[1, 12], [2, 22], [3, 24], [4, 20], [5, 12], [6, 6], [7, 4]]) : pesado([[0, 40], [1, 30], [2, 20], [3, 10]]);
-    const personas = Array.from({ length: nPersonas }, () => generarPersona(stickerFinal, vinculoHogar));
-
-    const asegurada = rnd() < 0.24;
-    const hipoteca = rnd() < 0.19;
-    const leasing = rnd() < 0.032;
+    const nPersonas = sector === "Vivienda" ? pesado([[0, 4], [1, 12], [2, 22], [3, 24], [4, 20], [5, 12], [6, 6]]) : pesado([[0, 40], [1, 30], [2, 20], [3, 10]]);
     const via = pesado([["Calle", 45], ["Carrera", 40], ["Diagonal", 6], ["Transversal", 5], ["Avenida", 4]]);
+    const numComuna = comuna === "Rural" ? 0 : +comuna;
 
     lista.push({
       id: i + 1,
-      codigo: i === 0 ? "7600101020041" : `76001${pad(comuna, 2)}${pad(100000 + i * 3 + entre(0, 2), 6)}`,
+      codigo: i === 0 ? "7600101020041" : `76001${pad(numComuna, 2)}${pad(100000 + i * 3 + entre(0, 2), 6)}`,
       direccion: `${via} ${entre(1, 72)}${rnd() < 0.2 ? uno(["A", "B", "C"]) : ""} # ${entre(1, 99)}-${entre(2, 98)}`,
       comuna,
-      barrio: uno(COMUNAS[comuna]),
-      zona: comuna === 1 && rnd() < 0.3 ? "Rural" : "Urbana",
-      uso,
-      pisos: uso === "Residencial" ? pesado([[1, 35], [2, 38], [3, 17], [4, 6], [5, 3], [8, 1]]) : entre(1, 6),
-      sistema: pesado([[SISTEMAS[0], 45], [SISTEMAS[1], 15], [SISTEMAS[2], 4], [SISTEMAS[3], 22], [SISTEMAS[4], 3], [SISTEMAS[5], 2], [SISTEMAS[7], 4], [SISTEMAS[8], 3], [SISTEMAS[9], 2]]),
-      periodo: pesado([[PERIODOS[0], 10], [PERIODOS[1], 32], [PERIODOS[2], 25], [PERIODOS[3], 20], [PERIODOS[4], 13]]),
+      barrio: uno(BARRIOS[comuna]),
+      sector,
+      pisos: sector === "Vivienda" ? pesado([[1, 35], [2, 38], [3, 17], [4, 6], [5, 3], [8, 1]]) : entre(1, 6),
+      cobertura: { asegurada: rnd() < 0.24, hipoteca: rnd() < 0.19, leasing: rnd() < 0.032 },
       inspecciones,
-      personas,
-      cobertura: {
-        asegurada, aseguradora: asegurada ? uno(ASEGURADORAS) : "", poliza: asegurada ? `POL-${entre(100000, 999999)}` : "",
-        hipoteca, entidadHipoteca: hipoteca ? uno(ENTIDADES) : "",
-        leasing, entidadLeasing: leasing ? uno(ENTIDADES) : "",
-      },
-      demolicion,
-      contacto: `${uno(NOMBRES_F.concat(NOMBRES_M))} ${uno(APELLIDOS)}`,
-      exportaciones: [],
+      personas: Array.from({ length: nPersonas }, () => generarPersona(vinculoHogar)),
     });
   }
   return lista;
 }
 
-const EDIFICACIONES = generarEdificaciones(5812);
+const EDIFICACIONES = generarEdificaciones(6043);
 
-// Índice hash por código catastral: búsqueda de duplicados en O(1) promedio (BRIEF §13)
+// Índice hash por código catastral: búsqueda de duplicados en O(1) promedio (BRIEF §13, RN-01)
 const INDICE_CATASTRAL = new Map(EDIFICACIONES.map((e) => [e.codigo, e]));
 
-const ultima = (e) => e.inspecciones[e.inspecciones.length - 1];
-const stickerDe = (e) => ultima(e).sticker;
-const fechaDe = (e) => ultima(e).fecha;
+// Sticker vigente = inspección con la fecha más reciente (RN-02)
+const vigente = (e) => e.inspecciones.reduce((m, i) => (!m || new Date(i.fecha) > new Date(m.fecha) ? i : m), null);
+const stickerDe = (e) => vigente(e)?.sticker || null;
+const fechaDe = (e) => vigente(e)?.fecha || null;
 
 /* ---------------- Estado de sesión ---------------- */
 const estado = {
   rol: "admin",
   conSesion: false,
   pagina: 1,
-  orden: { campo: "fecha", dir: "desc" },
   pasoActual: 1,
   personasNuevas: [],
+  fichaId: null,
+  retirando: null,
+  personaCtx: null,
+  ultimaActualizacion: EDIFICACIONES.reduce((m, e) => { const f = fechaDe(e); return f && new Date(f) > m ? new Date(f) : m; }, FECHA_SISMO),
 };
 try {
   estado.conSesion = sessionStorage.getItem("sesion") === "1";
-  estado.rol = sessionStorage.getItem("rol") || "admin";
+  estado.rol = ROLES[sessionStorage.getItem("rol")] ? sessionStorage.getItem("rol") : "admin";
 } catch (_) { /* almacenamiento bloqueado: el mockup funciona igual */ }
 
 function guardarSesion() {
@@ -263,12 +222,7 @@ function guardarSesion() {
 }
 const puede = (permiso) => ROLES[estado.rol].permisos.includes(permiso);
 const usuarioActual = () => ROLES[estado.rol].usuario;
-
-// El inspector solo ve las edificaciones que inspeccionó
-function alcance() {
-  if (estado.rol === "inspector") return EDIFICACIONES.filter((e) => e.inspecciones.some((i) => i.inspector === usuarioActual()));
-  return EDIFICACIONES;
-}
+const marcarCambio = () => { estado.ultimaActualizacion = new Date(); pintarPublico(); };
 
 /* ---------------- Aviso emergente ---------------- */
 let temporizador;
@@ -281,59 +235,154 @@ function aviso(texto) {
 }
 
 /* ---------------- Piezas reutilizables ---------------- */
-const etiquetaSticker = (s) => `<span class="etq etq--${s}">${STICKER[s].nombre}</span>`;
-function chipsCobertura(c) {
-  const chips = [c.asegurada ? "Asegurada" : "No asegurada"];
-  if (c.hipoteca) chips.push("Hipoteca");
-  if (c.leasing) chips.push("Leasing");
-  return `<span class="chips">${chips.map((x) => `<span class="etq etq--neutro">${x}</span>`).join("")}</span>`;
-}
-function barrasH(contenedor, filas, total) {
+const etiquetaSticker = (s) => (s ? `<span class="etq etq--${s}">${STICKER[s].nombre}</span>` : '<span class="etq etq--neutro">Sin inspeccionar</span>');
+const condicionTxt = (p) => (p.condiciones.length ? p.condiciones.join(", ") : "Ninguna");
+const documentoTxt = (p) => (p.documento ? `${p.tipoDoc}<br><small>${esc(p.documento)}</small>` : p.tipoDoc);
+const opcionesHtml = (lista, valor, etiqueta = (v) => v) => lista.map((v) => `<option value="${esc(v)}" ${v === valor ? "selected" : ""}>${esc(etiqueta(v))}</option>`).join("");
+
+function barrasH(contenedor, filas) {
   const max = Math.max(...filas.map((f) => f[1]), 1);
   contenedor.innerHTML = filas.map(([etq, v]) => `
     <div class="barra-h">
       <span>${etq}</span>
       <span class="barra-h__pista" aria-hidden="true"><span class="barra-h__relleno" style="width:${(v / max) * 100}%"></span></span>
       <span class="barra-h__valor">${fmt(v)}</span>
-    </div>`).join("") + (total ? "" : "");
+    </div>`).join("");
+}
+
+function marcarError(input, mensaje) {
+  const raiz = input.closest(".campo, .grupo") || input.parentElement;
+  let p = raiz.querySelector(".campo__error[data-auto]");
+  if (!mensaje) {
+    input.removeAttribute("aria-invalid");
+    if (p) p.remove();
+    return true;
+  }
+  if (!p) {
+    p = document.createElement("p");
+    p.className = "campo__error";
+    p.dataset.auto = "1";
+    p.id = (input.id || input.name) + "-error";
+    raiz.append(p);
+  }
+  p.textContent = mensaje;
+  input.setAttribute("aria-invalid", "true");
+  input.setAttribute("aria-describedby", p.id);
+  return false;
+}
+const limpiarErrores = (raiz) => $$("[aria-invalid]", raiz).forEach((i) => marcarError(i, ""));
+
+/* ---------- Campos compartidos: edificación (RF-02-02) e inspección (RF-02-04) ----------
+   Se pintan con un prefijo para reutilizarlos en el registro por pasos y en los diálogos. */
+function camposEdificacion(p, e = {}) {
+  const c = e.cobertura || {};
+  return `
+    <div class="rejilla">
+      <div class="campo"><label for="${p}-direccion">Dirección</label><input id="${p}-direccion" value="${esc(e.direccion || "")}" placeholder="Ej.: Carrera 24 # 9-15"></div>
+      <div class="campo"><label for="${p}-comuna">Comuna</label><select id="${p}-comuna">${opcionesHtml(COMUNAS, e.comuna || "1", comunaTxt)}</select></div>
+      <div class="campo"><label for="${p}-barrio">Barrio</label><input id="${p}-barrio" value="${esc(e.barrio || "")}"></div>
+      <div class="campo"><label for="${p}-sector">Sector / uso</label><select id="${p}-sector">${opcionesHtml(SECTORES, e.sector || "Vivienda")}</select></div>
+      <div class="campo"><label for="${p}-pisos">Número de pisos</label><input id="${p}-pisos" type="number" min="1" max="60" step="1" value="${e.pisos || 1}"></div>
+    </div>
+    <fieldset class="grupo">
+      <legend>Cobertura</legend>
+      <p class="campo__ayuda">Cada opción es independiente: una edificación puede estar asegurada y tener hipoteca al mismo tiempo.</p>
+      <label class="check"><input type="checkbox" id="${p}-asegurada" ${c.asegurada ? "checked" : ""}> Está asegurada</label>
+      <label class="check"><input type="checkbox" id="${p}-hipoteca" ${c.hipoteca ? "checked" : ""}> Tiene hipoteca</label>
+      <label class="check"><input type="checkbox" id="${p}-leasing" ${c.leasing ? "checked" : ""}> Está en leasing</label>
+    </fieldset>`;
+}
+
+function validarEdificacion(p) {
+  let ok = true;
+  const dir = $(`#${p}-direccion`), bar = $(`#${p}-barrio`), pisos = $(`#${p}-pisos`);
+  ok = marcarError(dir, dir.value.trim() ? "" : "Escriba la dirección.") && ok;
+  ok = marcarError(bar, bar.value.trim() ? "" : "Escriba el barrio.") && ok;
+  const n = Number(pisos.value);
+  ok = marcarError(pisos, Number.isInteger(n) && n >= 1 ? "" : "El número de pisos debe ser un entero mayor o igual a 1.") && ok;
+  return ok;
+}
+
+function leerEdificacion(p) {
+  return {
+    direccion: $(`#${p}-direccion`).value.trim(),
+    comuna: $(`#${p}-comuna`).value,
+    barrio: $(`#${p}-barrio`).value.trim(),
+    sector: $(`#${p}-sector`).value,
+    pisos: +$(`#${p}-pisos`).value,
+    cobertura: { asegurada: $(`#${p}-asegurada`).checked, hipoteca: $(`#${p}-hipoteca`).checked, leasing: $(`#${p}-leasing`).checked },
+  };
+}
+
+function camposInspeccion(p) {
+  const ahora = new Date(); ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
+  return `
+    <div class="rejilla">
+      <div class="campo"><label for="${p}-fecha">Fecha y hora</label><input id="${p}-fecha" type="datetime-local" value="${ahora.toISOString().slice(0, 16)}"></div>
+      <div class="campo"><span class="campo__ayuda">Inspector</span><strong>${esc(usuarioActual())}</strong><span class="campo__ayuda">Se toma del usuario que inició sesión.</span></div>
+    </div>
+    <fieldset class="grupo">
+      <legend>Sticker instalado</legend>
+      <div class="elige-sticker">${["verde", "amarillo", "rojo"].map((s) => `
+        <div class="opcion-sticker opcion-sticker--${s}">
+          <input type="radio" name="${p}-sticker" id="${p}-st-${s}" value="${s}">
+          <label for="${p}-st-${s}"><span class="sticker__banda">${STICKER[s].nombre}: ${STICKER[s].titulo.toLowerCase()}</span><span class="desc">${STICKER[s].texto}</span></label>
+        </div>`).join("")}
+      </div>
+    </fieldset>
+    <div class="campo"><label for="${p}-obs">Observaciones (opcional)</label><textarea id="${p}-obs" rows="3"></textarea></div>`;
+}
+
+function validarInspeccion(p) {
+  let ok = true;
+  const f = $(`#${p}-fecha`);
+  const fecha = new Date(f.value);
+  let msg = "";
+  if (!f.value || isNaN(fecha)) msg = "Indique la fecha y hora.";
+  else if (fecha > new Date()) msg = "La fecha no puede ser futura.";
+  else if (fecha < FECHA_SISMO) msg = "La fecha no puede ser anterior al sismo (10 de agosto de 2026).";
+  ok = marcarError(f, msg) && ok;
+  const radio = $(`input[name=${p}-sticker]`);
+  ok = marcarError(radio, $(`input[name=${p}-sticker]:checked`) ? "" : "Elija el sticker que instaló.") && ok;
+  return ok;
+}
+
+function leerInspeccion(p) {
+  return {
+    fecha: new Date($(`#${p}-fecha`).value).toISOString(),
+    sticker: $(`input[name=${p}-sticker]:checked`).value,
+    observaciones: $(`#${p}-obs`).value.trim(),
+    inspector: usuarioActual(),
+  };
 }
 
 /* =========================================================
-   ÁREA PÚBLICA: solo cifras agregadas (BRIEF §11 y §12.1)
+   ÁREA PÚBLICA: solo cifras agregadas (MOD-05, RN-09)
    ========================================================= */
 function pintarPublico() {
-  const total = EDIFICACIONES.length;
   const porSticker = { rojo: 0, amarillo: 0, verde: 0 };
-  const demol = { concepto: 0, demolida: 0, escombros: 0 };
   const porComuna = {};
   const porRango = Object.fromEntries(RANGOS.map((r) => [r, 0]));
-  const cob = { asegurada: 0, noAsegurada: 0, hipoteca: 0, leasing: 0 };
 
   // Un solo recorrido O(n) para todas las cifras
   for (const e of EDIFICACIONES) {
-    const s = stickerDe(e);
-    porSticker[s]++;
-    const iDem = ESTADOS_DEMOLICION.indexOf(e.demolicion);
-    if (iDem >= 1) demol.concepto++;
-    if (iDem >= 2) demol.demolida++;
-    if (iDem >= 3) demol.escombros++;
-    (porComuna[e.comuna] ||= { rojo: 0, amarillo: 0, verde: 0 })[s]++;
     for (const p of e.personas) porRango[rangoEtario(edad(p.nacimiento))]++;
-    e.cobertura.asegurada ? cob.asegurada++ : cob.noAsegurada++;
-    if (e.cobertura.hipoteca) cob.hipoteca++;
-    if (e.cobertura.leasing) cob.leasing++;
+    const s = stickerDe(e);
+    if (!s) continue; // solo se cuentan las edificaciones inspeccionadas
+    porSticker[s]++;
+    (porComuna[e.comuna] ||= { rojo: 0, amarillo: 0, verde: 0 })[s]++;
   }
+  const total = porSticker.rojo + porSticker.amarillo + porSticker.verde;
 
-  $("#fecha-corte").textContent = `Corte: ${fechaLarga(HOY)}`;
+  $("#fecha-actualizacion").textContent = `Última actualización: ${fechaHora(estado.ultimaActualizacion)}`;
   $("#total-edif").textContent = fmt(total);
 
-  const orden = ["rojo", "amarillo", "verde"];
   const barra = $("#barra-stickers");
-  barra.innerHTML = orden.map((s) => `<span class="barra__seg barra__seg--${s}" style="flex:${porSticker[s]}">${pct(porSticker[s], total)}</span>`).join("");
-  barra.setAttribute("aria-label", orden.map((s) => `${STICKER[s].nombre}: ${fmt(porSticker[s])}`).join(", "));
-  $("#leyenda-barra").innerHTML = orden.map((s) => `<li><span class="punto punto--${s}"></span>${STICKER[s].nombre}, ${STICKER[s].titulo.toLowerCase()}: <strong>${fmt(porSticker[s])}</strong></li>`).join("");
+  barra.innerHTML = ORDEN_COLORES.map((s) => `<span class="barra__seg barra__seg--${s}" style="flex:${porSticker[s]}">${pct(porSticker[s], total)}</span>`).join("");
+  barra.setAttribute("aria-label", ORDEN_COLORES.map((s) => `${STICKER[s].nombre}: ${fmt(porSticker[s])}`).join(", "));
+  $("#leyenda-barra").innerHTML = ORDEN_COLORES.map((s) => `<li><span class="punto punto--${s}"></span>${STICKER[s].nombre}, ${STICKER[s].titulo.toLowerCase()}: <strong>${fmt(porSticker[s])}</strong></li>`).join("");
 
-  $("#tarjetas-sticker").innerHTML = orden.map((s) => `
+  $("#tarjetas-sticker").innerHTML = ORDEN_COLORES.map((s) => `
     <article class="sticker sticker--${s}">
       <div class="sticker__banda">${STICKER[s].titulo}</div>
       <div class="sticker__cuerpo">
@@ -343,20 +392,13 @@ function pintarPublico() {
       </div>
     </article>`).join("");
 
-  $("#proceso-demolicion").innerHTML = [
-    [demol.concepto, "Edificaciones con concepto de demolición aprobado"],
-    [demol.demolida, "Edificaciones demolidas"],
-    [demol.escombros, "Puntos con escombros retirados"],
-  ].map(([n, t]) => `<li><span class="proceso__num">${fmt(n)}</span><span class="proceso__txt">${t}</span></li>`).join("");
-
-  const filas = Object.entries(porComuna).map(([c, v]) => ({ c: +c, ...v, t: v.rojo + v.amarillo + v.verde })).sort((a, b) => b.t - a.t);
-  $("#tabla-comunas tbody").innerHTML = filas.map((f) => `<tr><th scope="row">Comuna ${f.c}</th><td class="num">${fmt(f.rojo)}</td><td class="num">${fmt(f.amarillo)}</td><td class="num">${fmt(f.verde)}</td><td class="num"><strong>${fmt(f.t)}</strong></td></tr>`).join("");
+  const filas = Object.entries(porComuna).map(([c, v]) => ({ c, ...v, t: v.rojo + v.amarillo + v.verde })).sort((a, b) => b.t - a.t);
+  $("#tabla-comunas tbody").innerHTML = filas.map((f) => `<tr><th scope="row">${comunaTxt(f.c)}</th><td class="num">${fmt(f.rojo)}</td><td class="num">${fmt(f.amarillo)}</td><td class="num">${fmt(f.verde)}</td><td class="num"><strong>${fmt(f.t)}</strong></td></tr>`).join("");
   $("#tabla-comunas tfoot").innerHTML = `<tr><th scope="row">Total</th><td class="num">${fmt(porSticker.rojo)}</td><td class="num">${fmt(porSticker.amarillo)}</td><td class="num">${fmt(porSticker.verde)}</td><td class="num">${fmt(total)}</td></tr>`;
 
   barrasH($("#barras-edad"), RANGOS.map((r) => [r, porRango[r]]));
-  barrasH($("#barras-cobertura"), [["Aseguradas", cob.asegurada], ["No aseguradas", cob.noAsegurada], ["Con hipoteca", cob.hipoteca], ["Con leasing", cob.leasing]]);
 
-  $("#explica-stickers").innerHTML = orden.map((s) => `
+  $("#explica-stickers").innerHTML = ORDEN_COLORES.map((s) => `
     <article class="sticker sticker--${s}">
       <div class="sticker__banda">${STICKER[s].nombre}: ${STICKER[s].titulo.toLowerCase()}</div>
       <div class="sticker__cuerpo"><p>${STICKER[s].texto}</p></div>
@@ -370,159 +412,100 @@ const ICONOS = {
   panel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
   edificaciones: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg>',
   registrar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg>',
-  reportes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   usuarios: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a5 5 0 0 0-4-4.9"/></svg>',
 };
 
 function pintarMenu(rutaActiva) {
   const items = [
     ["panel", "#panel", "Panel"],
-    ["edificaciones", "#edificaciones", estado.rol === "inspector" ? "Mis edificaciones" : "Edificaciones"],
-    ["registrar", "#nueva", "Registrar inspección"],
-    ["reportes", "#reportes", "Reportes"],
+    ["edificaciones", "#edificaciones", "Edificaciones"],
+    ["registrar", "#nueva", "Registrar edificación"],
     ["usuarios", "#usuarios", "Usuarios"],
   ].filter(([perm]) => puede(perm));
-  const mapa = { panel: "panel", edificaciones: "edificaciones", ficha: "edificaciones", nueva: "registrar", reportes: "reportes", usuarios: "usuarios" };
+  const mapa = { panel: "panel", edificaciones: "edificaciones", ficha: "edificaciones", nueva: "registrar", usuarios: "usuarios" };
   $("#menu-privado").innerHTML = items.map(([perm, href, txt]) =>
     `<li><a href="${href}" ${mapa[rutaActiva] === perm ? 'aria-current="page"' : ""}>${ICONOS[perm]}${txt}</a></li>`).join("");
   $("#nombre-usuario").textContent = usuarioActual();
   $("#selector-rol").value = estado.rol;
-  $$("[data-permiso]").forEach((el) => (el.hidden = !puede(el.dataset.permiso)));
 }
 
-/* ---------- Cola de prioridad (montículo binario) ----------
-   Insertar y extraer cuestan O(log n). Se usa para ordenar
-   qué edificación reinspeccionar primero (BRIEF §13).        */
-class ColaPrioridad {
-  constructor() { this.h = []; }
-  get tamano() { return this.h.length; }
-  insertar(item, prioridad) {
-    this.h.push({ item, prioridad });
-    let i = this.h.length - 1;
-    while (i > 0) {
-      const p = (i - 1) >> 1;
-      if (this.h[p].prioridad >= this.h[i].prioridad) break;
-      [this.h[p], this.h[i]] = [this.h[i], this.h[p]];
-      i = p;
-    }
-  }
-  extraer() {
-    const tope = this.h[0];
-    const ult = this.h.pop();
-    if (this.h.length) {
-      this.h[0] = ult;
-      let i = 0;
-      for (;;) {
-        const l = 2 * i + 1, r = l + 1;
-        let m = i;
-        if (l < this.h.length && this.h[l].prioridad > this.h[m].prioridad) m = l;
-        if (r < this.h.length && this.h[r].prioridad > this.h[m].prioridad) m = r;
-        if (m === i) break;
-        [this.h[m], this.h[i]] = [this.h[i], this.h[m]];
-        i = m;
-      }
-    }
-    return tope;
-  }
-}
-
-function puntajePrioridad(e) {
-  const s = stickerDe(e);
-  const vulnerables = e.personas.filter((p) => { const a = edad(p.nacimiento); return a < 10 || a >= 60 || p.condiciones.length; }).length;
-  return Math.round((s === "rojo" ? 50 : 30) + vulnerables * 8 + diasDesde(fechaDe(e)) * 0.4);
-}
-
+/* ---------- Panel: indicadores e inspecciones recientes ---------- */
 function pintarPanel() {
-  const datos = alcance();
-  const cuenta = (s) => datos.filter((e) => stickerDe(e) === s).length;
-  const porValidar = datos.filter((e) => ultima(e).estado === "Por validar").length;
+  const cuenta = (s) => EDIFICACIONES.filter((e) => stickerDe(e) === s).length;
   const tarjetas = [
-    ["", fmt(datos.length), estado.rol === "inspector" ? "Edificaciones que ha inspeccionado" : "Edificaciones registradas"],
+    ["", fmt(EDIFICACIONES.length), "Edificaciones registradas"],
     ["rojo", fmt(cuenta("rojo")), "Con sticker rojo"],
     ["amarillo", fmt(cuenta("amarillo")), "Con sticker amarillo"],
-    ["", fmt(porValidar), estado.rol === "admin" ? "Inspecciones por validar" : "Inspecciones pendientes de validación"],
+    ["", fmt(cuenta(null)), "Sin inspeccionar"],
   ];
   $("#indicadores-panel").innerHTML = tarjetas.map(([c, n, t]) => `<div class="indicador ${c ? "indicador--" + c : ""}"><span class="indicador__num">${n}</span><span class="indicador__txt">${t}</span></div>`).join("");
 
-  const cola = new ColaPrioridad();
-  for (const e of datos) {
-    if (stickerDe(e) !== "verde" && e.demolicion === "ninguno") cola.insertar(e, puntajePrioridad(e));
-  }
-  const top = [];
-  while (top.length < 6 && cola.tamano) top.push(cola.extraer());
-  $("#cola-prioridad").innerHTML = top.map(({ item: e, prioridad }, i) => `
-    <li>
-      <span class="cola__pos" aria-hidden="true">${i + 1}</span>
-      <span>
-        <a class="cola__dir" href="#ficha-${e.id}">${esc(e.direccion)}</a>
-        <span class="cola__det">Comuna ${e.comuna}, ${esc(e.barrio)}. ${etiquetaSticker(stickerDe(e))} hace ${diasDesde(fechaDe(e))} días</span>
-      </span>
-      <span class="cola__puntaje"><strong>${prioridad}</strong>puntos</span>
-    </li>`).join("") || "<li>No hay edificaciones pendientes.</li>";
-
-  const recientes = [...datos].sort((a, b) => new Date(fechaDe(b)) - new Date(fechaDe(a))).slice(0, 6);
+  const recientes = EDIFICACIONES.filter(fechaDe).sort((a, b) => new Date(fechaDe(b)) - new Date(fechaDe(a))).slice(0, 8);
   $("#recientes").innerHTML = recientes.map((e) => `
     <li>
-      <span><a href="#ficha-${e.id}">${esc(e.direccion)}</a><small>${fechaCorta(fechaDe(e))}, ${esc(ultima(e).inspector)}</small></span>
+      <span><a href="#ficha-${e.id}">${esc(e.direccion)}</a><small>${fechaCorta(fechaDe(e))}, ${esc(vigente(e).inspector)}</small></span>
       ${etiquetaSticker(stickerDe(e))}
     </li>`).join("");
 }
 
-/* ---------- Consulta con filtros combinables ---------- */
-const POR_PAGINA = 15;
+/* ---------- Consulta con filtros combinables (RF-04-01, RF-04-02) ---------- */
+const POR_PAGINA = 20;
 
 function leerFiltros() {
+  const tri = (id) => $(id).value; // "" indiferente, "si", "no"
   return {
-    texto: $("#f-buscar").value.trim().toLowerCase(),
+    codigo: $("#f-codigo").value.trim(),
     comuna: $("#f-comuna").value,
-    sticker: $("#f-sticker").value,
-    demolicion: $("#f-demolicion").value,
-    asegurada: $("#f-asegurada").checked,
-    noAsegurada: $("#f-noasegurada").checked,
-    hipoteca: $("#f-hipoteca").checked,
-    leasing: $("#f-leasing").checked,
-    ninos: $("#f-ninos").checked,
-    mayores: $("#f-mayores").checked,
-    discapacidad: $("#f-discapacidad").checked,
-    arrendatarios: $("#f-arrendatarios").checked,
+    barrio: normalizar($("#f-barrio").value),
+    sector: $("#f-sector").value,
+    stickers: $$("input[name=f-sticker]:checked").map((c) => c.value),
+    desde: $("#f-desde").value ? new Date($("#f-desde").value + "T00:00:00") : null,
+    hasta: $("#f-hasta").value ? new Date($("#f-hasta").value + "T23:59:59") : null,
+    asegurada: tri("#f-asegurada"),
+    hipoteca: tri("#f-hipoteca"),
+    leasing: tri("#f-leasing"),
+    vinculo: $("#f-vinculo").value,
+    rango: $("#f-rango").value,
+    condicion: $("#f-condicion").value,
     poblacion: $("#f-poblacion").value,
   };
 }
 
+const cumpleTri = (valor, filtro) => !filtro || (filtro === "si") === valor;
+
+// La persona debe cumplir todos los filtros de personas a la vez (RF-04-01 CA-2)
+function personaCumple(p, f) {
+  if (f.vinculo && p.vinculo !== f.vinculo) return false;
+  if (f.rango && rangoEtario(edad(p.nacimiento)) !== f.rango) return false;
+  if (f.condicion === "Ninguna" && p.condiciones.length) return false;
+  if (f.condicion && f.condicion !== "Ninguna" && !p.condiciones.includes(f.condicion)) return false;
+  if (f.poblacion && p.poblacion !== f.poblacion) return false;
+  return true;
+}
+
 function cumple(e, f) {
-  // Primero los filtros baratos y más selectivos; después los que recorren personas
-  if (f.comuna && e.comuna !== +f.comuna) return false;
-  if (f.sticker && stickerDe(e) !== f.sticker) return false;
-  if (f.demolicion && e.demolicion !== f.demolicion) return false;
-  if (f.asegurada && !e.cobertura.asegurada) return false;
-  if (f.noAsegurada && e.cobertura.asegurada) return false;
-  if (f.hipoteca && !e.cobertura.hipoteca) return false;
-  if (f.leasing && !e.cobertura.leasing) return false;
-  if (f.texto && !(e.direccion.toLowerCase().includes(f.texto) || e.codigo.includes(f.texto) || e.barrio.toLowerCase().includes(f.texto))) return false;
-  if (f.ninos && !e.personas.some((p) => edad(p.nacimiento) < 10)) return false;
-  if (f.mayores && !e.personas.some((p) => edad(p.nacimiento) >= 60)) return false;
-  if (f.discapacidad && !e.personas.some((p) => p.condiciones.includes("Discapacidad"))) return false;
-  if (f.arrendatarios && !e.personas.some((p) => p.vinculo === "Arrendatario")) return false;
-  if (f.poblacion && !e.personas.some((p) => p.poblacion === f.poblacion)) return false;
+  // Primero los filtros baratos; al final los que recorren personas
+  if (f.comuna && e.comuna !== f.comuna) return false;
+  if (f.sector && e.sector !== f.sector) return false;
+  if (f.codigo && !e.codigo.includes(f.codigo)) return false;
+  if (f.barrio && !normalizar(e.barrio).includes(f.barrio)) return false;
+  if (!cumpleTri(e.cobertura.asegurada, f.asegurada) || !cumpleTri(e.cobertura.hipoteca, f.hipoteca) || !cumpleTri(e.cobertura.leasing, f.leasing)) return false;
+  const s = stickerDe(e);
+  if (f.stickers.length && !f.stickers.includes(s || "sin")) return false;
+  if (f.desde || f.hasta) {
+    const fecha = fechaDe(e);
+    if (!fecha) return false;
+    const d = new Date(fecha);
+    if ((f.desde && d < f.desde) || (f.hasta && d > f.hasta)) return false;
+  }
+  if ((f.vinculo || f.rango || f.condicion || f.poblacion) && !e.personas.some((p) => personaCumple(p, f))) return false;
   return true;
 }
 
 function pintarConsulta() {
   const f = leerFiltros();
-  let res = alcance().filter((e) => cumple(e, f));
-  const { campo, dir } = estado.orden;
-  const valor = {
-    direccion: (e) => e.direccion,
-    comuna: (e) => e.comuna,
-    sticker: (e) => ORDEN_STICKER[stickerDe(e)],
-    fecha: (e) => new Date(fechaDe(e)).getTime(),
-    personas: (e) => e.personas.length,
-  }[campo];
-  res.sort((a, b) => {
-    const va = valor(a), vb = valor(b);
-    const c = typeof va === "string" ? va.localeCompare(vb, "es") : va - vb;
-    return dir === "asc" ? c : -c;
-  });
+  // Orden fijo: última inspección más reciente primero; las no inspeccionadas al final
+  const res = EDIFICACIONES.filter((e) => cumple(e, f)).sort((a, b) => (fechaDe(b) ? new Date(fechaDe(b)) : 0) - (fechaDe(a) ? new Date(fechaDe(a)) : 0));
 
   const paginas = Math.max(1, Math.ceil(res.length / POR_PAGINA));
   estado.pagina = Math.min(estado.pagina, paginas);
@@ -535,22 +518,16 @@ function pintarConsulta() {
 
   $("#tabla-edif tbody").innerHTML = visibles.length ? visibles.map((e) => `
     <tr>
-      <td><a href="#ficha-${e.id}"><strong>${esc(e.direccion)}</strong></a><br><small>${e.codigo}</small></td>
-      <td>${e.comuna}<br><small>${esc(e.barrio)}</small></td>
+      <td><a href="#ficha-${e.id}">${e.codigo}</a></td>
+      <td><strong>${esc(e.direccion)}</strong></td>
+      <td>${comunaTxt(e.comuna)}<br><small>${esc(e.barrio)}</small></td>
+      <td>${e.sector}</td>
       <td>${etiquetaSticker(stickerDe(e))}</td>
-      <td>${fechaCorta(fechaDe(e))}</td>
+      <td>${fechaDe(e) ? fechaCorta(fechaDe(e)) : "—"}</td>
       <td class="num">${e.personas.length}</td>
-      <td>${chipsCobertura(e.cobertura)}</td>
       <td><a class="btn btn--fantasma btn--chico" href="#ficha-${e.id}">Ver ficha</a></td>
     </tr>`).join("")
-    : `<tr class="vacio"><td colspan="7">Ninguna edificación cumple todos los filtros. Quite alguno o use <strong>Limpiar filtros</strong>.</td></tr>`;
-
-  $$(".orden").forEach((b) => {
-    const activo = b.dataset.orden === campo;
-    if (activo) b.setAttribute("aria-sort", dir === "asc" ? "ascending" : "descending");
-    else b.removeAttribute("aria-sort");
-    b.closest("th").setAttribute("aria-sort", activo ? (dir === "asc" ? "ascending" : "descending") : "none");
-  });
+    : `<tr class="vacio"><td colspan="8">Ninguna edificación cumple todos los filtros. Quite alguno o use <strong>Limpiar filtros</strong>.</td></tr>`;
 
   // Paginación compacta: primera, vecinas y última
   const nums = new Set([1, paginas, estado.pagina - 1, estado.pagina, estado.pagina + 1].filter((n) => n >= 1 && n <= paginas));
@@ -564,197 +541,246 @@ function pintarConsulta() {
   $("#paginas").innerHTML = html;
 }
 
-/* ---------- Ficha de la edificación ---------- */
+/* ---------- Ficha de la edificación (RF-04-03) ---------- */
+const buscarEdificacion = (id) => EDIFICACIONES.find((x) => x.id === +id);
+
+function filaPersona(p, i) {
+  const a = edad(p.nacimiento);
+  if (estado.retirando === i) {
+    // Confirmación dentro de la tabla (RF-03-04 CA-2): el mockup no usa confirm()
+    return `<tr class="confirmar"><td colspan="7">
+      <span>¿Retirar a <strong>${esc(p.nombres)} ${esc(p.apellidos)}</strong> de esta edificación?</span>
+      <span class="confirmar__acciones">
+        <button class="btn btn--peligro btn--chico" type="button" data-retirar-si="${i}">Sí, retirar</button>
+        <button class="btn btn--fantasma btn--chico" type="button" data-retirar-no>Cancelar</button>
+      </span></td></tr>`;
+  }
+  return `<tr>
+    <td>${esc(p.nombres)} ${esc(p.apellidos)}</td>
+    <td>${documentoTxt(p)}</td>
+    <td>${p.vinculo}</td>
+    <td>${a} años<br><small>${rangoEtario(a)}</small></td>
+    <td>${condicionTxt(p)}</td>
+    <td>${p.poblacion}</td>
+    <td class="acciones-fila">
+      <button class="btn btn--fantasma btn--chico" type="button" data-editar-persona="${i}">Editar</button>
+      <button class="btn btn--fantasma btn--chico" type="button" data-retirar="${i}">Retirar</button>
+    </td>
+  </tr>`;
+}
+
 function pintarFicha(id) {
-  const e = EDIFICACIONES.find((x) => x.id === +id);
-  if (!e || !alcance().includes(e)) {
-    $("#ficha").innerHTML = `<div class="vacio-grande"><h1 id="t-ficha">No encontramos esta edificación</h1><p>Puede que no exista o que su rol no tenga acceso a ella.</p><a class="btn btn--primario" href="#edificaciones">Volver a la consulta</a></div>`;
+  const e = buscarEdificacion(id);
+  if (!e) {
+    $("#ficha").innerHTML = `<div class="vacio-grande"><h1 id="t-ficha">No encontramos esta edificación</h1><p>Puede que el enlace no sea correcto.</p><a class="btn btn--primario" href="#edificaciones">Volver a la consulta</a></div>`;
     return;
   }
-  const u = ultima(e);
-  const s = u.sticker;
-  const iDem = ESTADOS_DEMOLICION.indexOf(e.demolicion);
+  if (estado.fichaId !== e.id) estado.retirando = null;
+  estado.fichaId = e.id;
+  const s = stickerDe(e);
   const c = e.cobertura;
+  const sino = (v) => (v ? "Sí" : "No");
+  const historial = [...e.inspecciones].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   $("#ficha").innerHTML = `
     <a class="volver" href="#edificaciones">‹ Volver a la consulta</a>
-    <p class="marca-pdf"><strong>Registro de Edificaciones.</strong> Reporte generado por ${esc(usuarioActual())} el ${new Date().toLocaleString("es-CO")}. Proyecto académico, datos ficticios.</p>
+    <p class="marca-pdf"><strong>Registro de Edificaciones.</strong> Reporte generado por ${esc(usuarioActual())} el ${new Date().toLocaleString("es-CO")}. Datos ficticios con fines académicos.</p>
     <div class="ficha-cab">
-      <div class="sticker-mini sticker-mini--${s}" role="img" aria-label="Sticker vigente: ${STICKER[s].nombre}, ${STICKER[s].titulo}">
-        <div class="sticker-mini__banda">${STICKER[s].nombre}</div>
-        <div class="sticker-mini__txt">${STICKER[s].titulo}</div>
+      <div class="sticker-mini sticker-mini--${s || "sin"}" role="img" aria-label="Sticker vigente: ${s ? `${STICKER[s].nombre}, ${STICKER[s].titulo}` : "sin inspeccionar"}">
+        <div class="sticker-mini__banda">${s ? STICKER[s].nombre : "Sin sticker"}</div>
+        <div class="sticker-mini__txt">${s ? STICKER[s].titulo : "Sin inspeccionar"}</div>
       </div>
       <div>
         <h1 id="t-ficha">${esc(e.direccion)}</h1>
-        <p>Comuna ${e.comuna}, ${esc(e.barrio)}. Código catastral ${e.codigo}</p>
+        <p>${comunaTxt(e.comuna)}, ${esc(e.barrio)}. Código catastral ${e.codigo}</p>
       </div>
       <div class="ficha-acciones">
-        ${puede("registrar") ? `<a class="btn btn--secundario" href="#reinspeccion-${e.codigo}">Registrar reinspección</a>` : ""}
-        ${puede("demoler") && s === "rojo" && iDem < 3 ? `<button class="btn btn--fantasma" type="button" id="btn-demolicion">${["Aprobar concepto de demolición", "Registrar demolición", "Registrar retiro de escombros"][iDem]}</button>` : ""}
+        <button class="btn btn--fantasma" type="button" id="btn-editar-edif">Editar edificación</button>
+        <button class="btn btn--secundario" type="button" id="btn-nueva-insp">${s ? "Registrar reinspección" : "Registrar inspección"}</button>
         <button class="btn btn--primario" type="button" id="btn-pdf">Exportar PDF</button>
       </div>
     </div>
 
     <div class="ficha-rejilla">
       <section class="caja" aria-labelledby="t-ident">
-        <h2 id="t-ident">Identificación y descripción</h2>
+        <h2 id="t-ident">Datos de la edificación</h2>
         <dl class="datos">
-          <dt>Zona</dt><dd>${e.zona}</dd>
-          <dt>Uso predominante</dt><dd>${e.uso}</dd>
+          <dt>Sector / uso</dt><dd>${e.sector}</dd>
           <dt>Número de pisos</dt><dd>${e.pisos}</dd>
-          <dt>Sistema estructural</dt><dd>${e.sistema}</dd>
-          <dt>Período de construcción</dt><dd>${e.periodo}</dd>
-          <dt>Persona de contacto</dt><dd>${esc(e.contacto)}</dd>
+          <dt>Comuna</dt><dd>${comunaTxt(e.comuna)}</dd>
+          <dt>Barrio</dt><dd>${esc(e.barrio)}</dd>
         </dl>
       </section>
 
       <section class="caja" aria-labelledby="t-cob">
         <h2 id="t-cob">Cobertura</h2>
         <dl class="datos">
-          <dt>Aseguramiento</dt><dd>${c.asegurada ? `Asegurada con ${c.aseguradora}, póliza ${c.poliza}` : "No asegurada"}</dd>
-          <dt>Hipoteca</dt><dd>${c.hipoteca ? `Sí, con ${c.entidadHipoteca}` : "No"}</dd>
-          <dt>Leasing</dt><dd>${c.leasing ? `Sí, con ${c.entidadLeasing}` : "No"}</dd>
+          <dt>Asegurada</dt><dd>${sino(c.asegurada)}</dd>
+          <dt>Con hipoteca</dt><dd>${sino(c.hipoteca)}</dd>
+          <dt>Con leasing</dt><dd>${sino(c.leasing)}</dd>
         </dl>
-        <h2 class="mt" id="t-dem">Demolición</h2>
-        <ol class="demolicion" aria-labelledby="t-dem">
-          ${["Concepto aprobado", "Demolida", "Escombros retirados"].map((t, i) => `<li class="${iDem > i ? "hecho" : ""}">${iDem > i ? "✓ " : ""}${t}</li>`).join("")}
-        </ol>
-        ${iDem === 0 ? '<p class="caja__nota" style="margin-top:.75rem">Sin concepto de demolición.</p>' : ""}
-      </section>
-
-      <section class="caja ancho" aria-labelledby="t-eval">
-        <h2 id="t-eval">Última evaluación: ${NIVELES_IDIGER[u.nivel].toLowerCase()}</h2>
-        <p class="caja__nota">${u.fase}, ${u.tipo.toLowerCase()}. ${fechaLarga(u.fecha)}, por ${esc(u.inspector)} (${u.codigoInspector}). Estado: <strong>${u.estado}</strong>. La clasificación global es la más crítica entre A y E.</p>
-        <div class="eval-tabla">
-          ${EVALUACIONES.map(([l, t], i) => `<div class="eval-celda eval-celda--${u.evals[i]}"><b>${l}: ${u.evals[i]}</b><span>${t}</span><span>${NIVELES_IDIGER[u.evals[i]]}</span></div>`).join("")}
-        </div>
       </section>
 
       <section class="caja ancho" aria-labelledby="t-pers">
-        <h2 id="t-pers">Personas asociadas (${e.personas.length})</h2>
-        ${e.personas.length ? `<div class="tabla-envoltura"><table class="tabla">
-          <thead><tr><th scope="col">Nombre</th><th scope="col">Documento</th><th scope="col">Vínculo</th><th scope="col">Edad</th><th scope="col">Condición</th><th scope="col">Población</th><th scope="col">Estado</th></tr></thead>
-          <tbody>${e.personas.map((p) => {
-            const a = edad(p.nacimiento);
-            return `<tr><td>${esc(p.nombres)} ${esc(p.apellidos)}</td><td>${p.tipoDoc}${p.documento ? `<br><small>${p.documento}</small>` : ""}</td><td>${p.vinculo}</td><td>${a} años<br><small>${rangoEtario(a)}</small></td><td>${p.condiciones.length ? p.condiciones.join(", ") : "Ninguna"}</td><td>${p.poblacion}</td><td>${p.estado}</td></tr>`;
-          }).join("")}</tbody></table></div>` : '<p class="caja__nota">No se registraron personas en esta edificación.</p>'}
+        <div class="caja__cab">
+          <h2 id="t-pers">Personas ocupantes (${e.personas.length})</h2>
+          <button class="btn btn--secundario btn--chico" type="button" id="btn-agregar-persona-ficha">Agregar persona</button>
+        </div>
+        ${e.personas.length ? `<div class="tabla-envoltura"><table class="tabla" id="tabla-personas-ficha">
+          <thead><tr><th scope="col">Nombre</th><th scope="col">Documento</th><th scope="col">Vínculo</th><th scope="col">Edad</th><th scope="col">Condición</th><th scope="col">Población</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
+          <tbody>${e.personas.map(filaPersona).join("")}</tbody></table></div>` : '<p class="caja__nota">Sin registros de personas en esta edificación.</p>'}
       </section>
 
-      <section class="caja" aria-labelledby="t-hist">
-        <h2 id="t-hist">Historial de inspecciones</h2>
-        <ol class="historial">
-          ${[...e.inspecciones].reverse().map((i) => `<li><b>${fechaLarga(i.fecha)} ${etiquetaSticker(i.sticker)}</b><small>${i.fase}. ${esc(i.inspector)}. ${i.estado}</small></li>`).join("")}
-        </ol>
-      </section>
-
-      <section class="caja" aria-labelledby="t-exp">
-        <h2 id="t-exp">Registro de exportaciones</h2>
-        <p class="caja__nota">El PDF contiene datos personales: cada exportación queda registrada.</p>
-        <ul class="recientes" id="lista-exportaciones">
-          ${e.exportaciones.length ? e.exportaciones.map((x) => `<li><span>${esc(x.usuario)}<small>${x.fecha}</small></span></li>`).join("") : "<li>Todavía nadie ha exportado esta ficha.</li>"}
-        </ul>
+      <section class="caja ancho" aria-labelledby="t-hist">
+        <h2 id="t-hist">Historial de inspecciones (${e.inspecciones.length})</h2>
+        ${historial.length ? `<ol class="historial">
+          ${historial.map((i, k) => `<li><b>${fechaHora(i.fecha)} ${etiquetaSticker(i.sticker)}${k === 0 ? ' <span class="etq etq--neutro">Vigente</span>' : ""}</b><small>Inspector: ${esc(i.inspector)}</small>${i.observaciones ? `<p class="historial__obs">${esc(i.observaciones)}</p>` : ""}</li>`).join("")}
+        </ol>` : '<p class="caja__nota">Sin registros de inspecciones.</p>'}
       </section>
     </div>`;
 
   $("#btn-pdf").addEventListener("click", () => {
-    e.exportaciones.unshift({ usuario: usuarioActual(), fecha: new Date().toLocaleString("es-CO") });
-    pintarFicha(e.id);
-    // En el sistema real el backend genera el PDF; el mockup solo registra la exportación
-    aviso("Exportación registrada. En este mockup el PDF no se descarga.");
+    // En el sistema real el backend genera el PDF con fecha, usuario y aviso de datos ficticios (RF-04-04)
+    aviso(`Se generaría edificacion-${e.codigo}-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.pdf. En este mockup no se descarga.`);
   });
-  const bDem = $("#btn-demolicion");
-  if (bDem) bDem.addEventListener("click", () => {
-    e.demolicion = ESTADOS_DEMOLICION[iDem + 1];
-    pintarFicha(e.id);
-    aviso(["Concepto de demolición aprobado.", "Demolición registrada.", "Retiro de escombros registrado."][iDem]);
+  $("#btn-editar-edif").addEventListener("click", () => abrirEditarEdificacion(e));
+  $("#btn-nueva-insp").addEventListener("click", () => abrirInspeccion(e));
+  $("#btn-agregar-persona-ficha").addEventListener("click", () => abrirPersona(e.personas, null, () => { marcarCambio(); pintarFicha(e.id); }));
+  const tabla = $("#tabla-personas-ficha");
+  if (tabla) tabla.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    if (b.dataset.editarPersona !== undefined) abrirPersona(e.personas, +b.dataset.editarPersona, () => { marcarCambio(); pintarFicha(e.id); });
+    else if (b.dataset.retirar !== undefined) { estado.retirando = +b.dataset.retirar; pintarFicha(e.id); }
+    else if (b.dataset.retirarNo !== undefined) { estado.retirando = null; pintarFicha(e.id); }
+    else if (b.dataset.retirarSi !== undefined) {
+      e.personas.splice(+b.dataset.retirarSi, 1);
+      estado.retirando = null;
+      marcarCambio();
+      pintarFicha(e.id);
+      aviso("Persona retirada de la edificación.");
+    }
   });
 }
 
-/* ---------- Registrar inspección (formulario por pasos) ---------- */
-const PASOS = ["Identificación", "Inspección rápida", "Personas", "Cobertura", "Evaluación en detalle"];
-
-function opciones(sel, lista, valorInicial) {
-  sel.innerHTML = lista.map((v) => `<option ${v === valorInicial ? "selected" : ""}>${v}</option>`).join("");
+/* ---------- Diálogos de la ficha ---------- */
+let edifEnEdicion = null;
+function abrirEditarEdificacion(e) {
+  edifEnEdicion = e;
+  $("#de-codigo").textContent = `Código catastral ${e.codigo} (no se puede cambiar).`;
+  $("#de-campos").innerHTML = camposEdificacion("de", e);
+  $("#dlg-edif").showModal();
 }
 
-function marcarError(input, mensaje) {
-  let p = input.parentElement.querySelector(".campo__error[data-auto]");
-  if (!mensaje) {
-    input.removeAttribute("aria-invalid");
-    if (p) p.remove();
-    return true;
+let edifEnInspeccion = null;
+function abrirInspeccion(e) {
+  edifEnInspeccion = e;
+  $("#t-dlg-insp").textContent = e.inspecciones.length ? "Registrar reinspección" : "Registrar inspección";
+  $("#di-campos").innerHTML = camposInspeccion("di");
+  $("#dlg-insp").showModal();
+}
+
+/* ---------- Persona: agregar y editar, con validación de duplicados (MOD-03) ---------- */
+// Clave de duplicado dentro de la edificación (RN-06): documento, o nombre + fecha si no hay documento
+function clavePersona(p) {
+  return p.tipoDoc === "Sin documento"
+    ? `sin|${normalizar(p.nombres + " " + p.apellidos)}|${p.nacimiento}`
+    : `doc|${p.tipoDoc}|${p.documento.trim()}`;
+}
+
+function abrirPersona(lista, indice, alGuardar) {
+  estado.personaCtx = { lista, indice, alGuardar };
+  const p = indice === null ? null : lista[indice];
+  const f = $("#form-persona");
+  f.reset();
+  limpiarErrores(f);
+  $("#pe-dup").hidden = true;
+  $("#t-dlg-persona").textContent = p ? "Editar persona" : "Agregar persona";
+  $("#pe-guardar").textContent = p ? "Guardar cambios" : "Agregar persona";
+  $("#pe-nombres").value = p?.nombres || "";
+  $("#pe-apellidos").value = p?.apellidos || "";
+  $("#pe-tipodoc").value = p?.tipoDoc || "Cédula de ciudadanía";
+  $("#pe-doc").value = p?.documento || "";
+  $("#pe-nac").value = p?.nacimiento || "";
+  $("#pe-vinculo").value = p?.vinculo || "Propietario";
+  $("#pe-poblacion").value = p?.poblacion || "Civil";
+  const conds = p?.condiciones || [];
+  $$("input[name=pe-cond]").forEach((c) => (c.checked = c.value === "Ninguna" ? !conds.length : conds.includes(c.value)));
+  actualizarDocumento();
+  actualizarRango();
+  $("#dlg-persona").showModal();
+}
+
+function actualizarDocumento() {
+  $("#pe-doc-campo").hidden = $("#pe-tipodoc").value === "Sin documento";
+}
+function actualizarRango() {
+  const v = $("#pe-nac").value;
+  $("#pe-rango").textContent = v && edad(v) >= 0 ? `${edad(v)} años: ${rangoEtario(edad(v))}` : "";
+}
+
+function guardarPersona(ev) {
+  ev.preventDefault();
+  const f = $("#form-persona");
+  limpiarErrores(f);
+  $("#pe-dup").hidden = true;
+  const p = {
+    nombres: $("#pe-nombres").value.trim(),
+    apellidos: $("#pe-apellidos").value.trim(),
+    tipoDoc: $("#pe-tipodoc").value,
+    documento: $("#pe-tipodoc").value === "Sin documento" ? "" : $("#pe-doc").value.trim(),
+    nacimiento: $("#pe-nac").value,
+    vinculo: $("#pe-vinculo").value,
+    condiciones: $$("input[name=pe-cond]:checked").map((c) => c.value).filter((v) => v !== "Ninguna"),
+    poblacion: $("#pe-poblacion").value,
+  };
+  let ok = true;
+  ok = marcarError($("#pe-nombres"), p.nombres ? "" : "Escriba los nombres.") && ok;
+  ok = marcarError($("#pe-apellidos"), p.apellidos ? "" : "Escriba los apellidos.") && ok;
+  if (p.tipoDoc !== "Sin documento") ok = marcarError($("#pe-doc"), p.documento ? "" : "Escriba el número de documento.") && ok;
+  const nac = p.nacimiento ? new Date(p.nacimiento + "T00:00:00") : null;
+  ok = marcarError($("#pe-nac"), !nac ? "Indique la fecha de nacimiento." : nac > HOY ? "La fecha de nacimiento no puede ser futura." : "") && ok;
+  if (!ok) return;
+
+  const { lista, indice, alGuardar } = estado.personaCtx;
+  const clave = clavePersona(p);
+  const repetida = lista.find((x, i) => i !== indice && clavePersona(x) === clave);
+  if (repetida) {
+    $("#pe-dup").textContent = p.tipoDoc === "Sin documento"
+      ? `Ya hay una persona con el mismo nombre y fecha de nacimiento en esta edificación: ${repetida.nombres} ${repetida.apellidos}.`
+      : `Ya hay una persona con ${p.tipoDoc.toLowerCase()} ${p.documento} en esta edificación.`;
+    $("#pe-dup").hidden = false;
+    return;
   }
-  if (!p) {
-    p = document.createElement("p");
-    p.className = "campo__error";
-    p.dataset.auto = "1";
-    p.id = input.id + "-error";
-    input.insertAdjacentElement("afterend", p);
-  }
-  p.textContent = mensaje;
-  input.setAttribute("aria-invalid", "true");
-  input.setAttribute("aria-describedby", p.id);
-  return false;
+  if (indice === null) lista.push(p);
+  else lista[indice] = p;
+  $("#dlg-persona").close();
+  aviso(indice === null ? "Persona agregada." : "Persona actualizada.");
+  alGuardar();
 }
 
-function prepararFormulario() {
-  $("#i-comuna").innerHTML = Object.keys(COMUNAS).map((c) => `<option value="${c}">Comuna ${c}</option>`).join("");
-  opciones($("#i-uso"), USOS, "Residencial");
-  opciones($("#i-sistema"), SISTEMAS, "Mampostería confinada");
-  opciones($("#p-tipodoc"), TIPOS_DOC, "Cédula de ciudadanía");
-  opciones($("#p-vinculo"), VINCULOS, "Propietario");
-  $("#f-comuna").innerHTML += Object.keys(COMUNAS).map((c) => `<option value="${c}">Comuna ${c}</option>`).join("");
+/* ---------- Registrar edificación en 3 pasos ---------- */
+const PASOS = ["Edificación y cobertura", "Inspección", "Personas ocupantes"];
 
-  $("#elige-sticker").innerHTML = ["verde", "amarillo", "rojo"].map((s) => `
-    <div class="opcion-sticker opcion-sticker--${s}">
-      <input type="radio" name="sticker" id="st-${s}" value="${s}">
-      <label for="st-${s}"><span class="sticker__banda">${STICKER[s].nombre}: ${STICKER[s].titulo.toLowerCase()}</span><span class="desc">${STICKER[s].texto}</span></label>
-    </div>`).join("");
-
-  $("#evaluaciones").innerHTML = EVALUACIONES.map(([l, t]) => `
-    <div class="campo">
-      <label for="ev-${l}">${l}. ${t}</label>
-      <select id="ev-${l}" data-eval>${NIVELES_IDIGER.slice(1).map((n, i) => `<option value="${i + 1}">${i + 1}. ${n}</option>`).join("")}</select>
-    </div>`).join("");
-
-  $("#porcentajes").innerHTML = ["Ninguno", "Leve", "Moderado", "Fuerte", "Severo"].map((g, i) => `
-    <div class="campo"><label for="pc-${i}">${g} (%)</label><input id="pc-${i}" type="number" min="0" max="100" value="${i === 0 ? 100 : 0}" data-pct></div>`).join("");
-}
-
-function reiniciarFormulario(codigo) {
-  $("#form-insp").reset();
+function reiniciarFormulario() {
   estado.personasNuevas = [];
-  estado.pasoActual = 1;
-  $$("#form-insp [aria-invalid]").forEach((i) => marcarError(i, ""));
-  $$("[data-revela]").forEach((c) => ($("#" + c.dataset.revela).hidden = true));
-  const ahora = new Date(); ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
-  $("#i-fecha").value = ahora.toISOString().slice(0, 16);
+  $("#w-catastral").value = "";
+  $("#w-edif").innerHTML = camposEdificacion("w");
+  $("#w-insp").innerHTML = camposInspeccion("w");
+  limpiarErrores($("#form-insp"));
   $("#aviso-duplicado").hidden = true;
-  $("#p-rango").textContent = "";
-  if (codigo) {
-    $("#i-catastral").value = codigo;
-    revisarDuplicado();
-  }
   pintarPersonasNuevas();
-  actualizarGlobal();
-  actualizarSuma();
   irAPaso(1);
 }
 
-// Búsqueda en el índice hash: si el código existe, se reutiliza la edificación
+// Búsqueda en el índice hash (RF-02-01): si el código existe, se trabaja desde la ficha
 function revisarDuplicado() {
-  const codigo = $("#i-catastral").value.trim();
+  const codigo = $("#w-catastral").value.trim();
   const e = INDICE_CATASTRAL.get(codigo);
   const av = $("#aviso-duplicado");
   if (e) {
-    av.innerHTML = `Esta edificación ya está registrada: <strong>${esc(e.direccion)}</strong>, comuna ${e.comuna}, sticker vigente ${STICKER[stickerDe(e)].nombre.toLowerCase()}. La inspección se agregará a su historial.`;
+    av.innerHTML = `Esta edificación ya está registrada: <strong>${esc(e.direccion)}</strong>, ${comunaTxt(e.comuna).toLowerCase()}. <a href="#ficha-${e.id}">Abra su ficha</a> para registrar la reinspección o editar sus personas.`;
     av.hidden = false;
-    $("#i-direccion").value = e.direccion;
-    $("#i-comuna").value = e.comuna;
-    $("#i-barrio").value = e.barrio;
-    $("#i-uso").value = e.uso;
-    $("#i-pisos").value = e.pisos;
-    $("#i-sistema").value = e.sistema;
   } else {
     av.hidden = true;
   }
@@ -768,247 +794,105 @@ function irAPaso(n) {
   $("#btn-anterior").hidden = n === 1;
   $("#btn-siguiente").hidden = n === PASOS.length;
   $("#btn-registrar").hidden = n !== PASOS.length;
-  if (n === 5) {
-    const s = $("input[name=sticker]:checked")?.value;
-    $("#aviso-detalle").textContent = s === "verde"
-      ? "Con sticker verde la evaluación en detalle es opcional. Puede registrar la inspección sin completarla."
-      : "Con sticker amarillo o rojo se debe completar la evaluación en detalle del formulario.";
-    actualizarGlobal();
-  }
 }
 
 function validarPaso(n) {
   let ok = true;
   if (n === 1) {
-    const cat = $("#i-catastral");
-    ok = marcarError(cat, /^\d{13}$/.test(cat.value.trim()) ? "" : "El código catastral debe tener 13 dígitos.") && ok;
-    const dir = $("#i-direccion");
-    ok = marcarError(dir, dir.value.trim() ? "" : "Escriba la dirección de la edificación.") && ok;
+    const cat = $("#w-catastral");
+    const codigo = cat.value.trim();
+    ok = marcarError(cat, !codigo ? "Escriba el código catastral." : revisarDuplicado() ? "Este código ya existe. Use la ficha de la edificación." : "") && ok;
+    ok = validarEdificacion("w") && ok;
   }
-  if (n === 2) {
-    const marcado = $("input[name=sticker]:checked");
-    let p = $("#err-sticker");
-    if (!marcado) {
-      if (!p) { p = document.createElement("p"); p.id = "err-sticker"; p.className = "campo__error"; $("#elige-sticker").after(p); }
-      p.textContent = "Elija el sticker que instaló.";
-      ok = false;
-    } else if (p) p.remove();
-  }
-  if (n === 5) ok = actualizarSuma();
-  if (!ok) $("#form-insp [aria-invalid], #err-sticker")?.scrollIntoView({ block: "center", behavior: "smooth" });
-  return ok;
-}
-
-function actualizarGlobal() {
-  const valores = $$("[data-eval]").map((s) => +s.value);
-  const g = Math.max(...valores);
-  const equivalente = NIVEL_A_STICKER[g];
-  const elegido = $("input[name=sticker]:checked")?.value;
-  const nivelEtq = { 1: "verde", 2: "amarillo", 3: "naranja", 4: "rojo" }[g];
-  $("#global").innerHTML = `
-    <span>Clasificación global, calculada:</span>
-    <span class="etq etq--${nivelEtq}">${g}. ${NIVELES_IDIGER[g]}</span>
-    <span>Equivale a sticker <strong>${STICKER[equivalente].nombre.toLowerCase()}</strong>.</span>
-    ${elegido && elegido !== equivalente ? `<span class="campo__error">No coincide con el sticker del paso 2 (${STICKER[elegido].nombre.toLowerCase()}). Revise antes de registrar.</span>` : ""}`;
-}
-
-function actualizarSuma() {
-  const suma = $$("[data-pct]").reduce((s, i) => s + (+i.value || 0), 0);
-  const p = $("#suma-pct");
-  const ok = suma === 100;
-  p.textContent = ok ? "Suma: 100 %. Correcto." : `Suma: ${suma} %. Debe ser 100 %.`;
-  p.className = "suma " + (ok ? "suma--ok" : "suma--error");
+  if (n === 2) ok = validarInspeccion("w");
+  if (!ok) $("#form-insp [aria-invalid]")?.scrollIntoView({ block: "center", behavior: "smooth" });
   return ok;
 }
 
 function pintarPersonasNuevas() {
-  const tb = $("#tabla-personas-nueva tbody");
-  tb.innerHTML = estado.personasNuevas.length ? estado.personasNuevas.map((p, i) => `
+  $("#tabla-personas-nueva tbody").innerHTML = estado.personasNuevas.length ? estado.personasNuevas.map((p, i) => `
     <tr>
       <td>${esc(p.nombres)} ${esc(p.apellidos)}</td>
+      <td>${documentoTxt(p)}</td>
       <td>${p.vinculo}</td>
-      <td>${p.nacimiento ? rangoEtario(edad(p.nacimiento)) : "Sin fecha"}</td>
-      <td>${p.condiciones.join(", ") || "Ninguna"}</td>
-      <td><button class="btn btn--fantasma btn--chico" type="button" data-quitar="${i}">Quitar</button></td>
-    </tr>`).join("") : `<tr class="vacio"><td colspan="5">Todavía no hay personas. Agregue la primera con el formulario.</td></tr>`;
+      <td>${rangoEtario(edad(p.nacimiento))}</td>
+      <td>${condicionTxt(p)}</td>
+      <td class="acciones-fila">
+        <button class="btn btn--fantasma btn--chico" type="button" data-editar="${i}">Editar</button>
+        <button class="btn btn--fantasma btn--chico" type="button" data-quitar="${i}">Quitar</button>
+      </td>
+    </tr>`).join("") : `<tr class="vacio"><td colspan="6">Todavía no hay personas. Use <strong>Agregar persona</strong>.</td></tr>`;
 }
 
-function agregarPersona() {
-  const nom = $("#p-nombres");
-  if (!marcarError(nom, nom.value.trim() ? "" : "Escriba los nombres.")) { nom.focus(); return; }
-  estado.personasNuevas.push({
-    nombres: nom.value.trim(),
-    apellidos: $("#p-apellidos").value.trim(),
-    tipoDoc: $("#p-tipodoc").value,
-    documento: $("#p-doc").value.trim(),
-    nacimiento: $("#p-nac").value,
-    vinculo: $("#p-vinculo").value,
-    genero: $("#p-genero").value,
-    condiciones: $$("input[name=p-cond]:checked").map((c) => c.value),
-    poblacion: $("#p-poblacion").value,
-    estado: $("#p-estado").value,
-    presencia: true,
-    alojamiento: "Lugar habitual de su residencia",
-  });
-  ["#p-nombres", "#p-apellidos", "#p-doc", "#p-nac"].forEach((s) => ($(s).value = ""));
-  $$("input[name=p-cond]").forEach((c) => (c.checked = false));
-  $("#p-rango").textContent = "";
-  pintarPersonasNuevas();
-  aviso("Persona agregada.");
-  nom.focus();
-}
-
-function registrarInspeccion(ev) {
+function registrarEdificacion(ev) {
   ev.preventDefault();
-  for (const n of [1, 2, 5]) {
+  for (const n of [1, 2]) {
     if (!validarPaso(n)) { irAPaso(n); validarPaso(n); return; }
   }
-  const codigo = $("#i-catastral").value.trim();
-  const sticker = $("input[name=sticker]:checked").value;
-  const evals = $$("[data-eval]").map((s) => +s.value);
-  const insp = {
-    fecha: new Date($("#i-fecha").value || Date.now()).toISOString(),
-    fase: "",
-    tipo: $("#i-tipo").value,
-    sticker,
-    nivel: Math.max(...evals),
-    evals,
-    inspector: usuarioActual(),
-    codigoInspector: (USUARIOS.find((u) => u.nombre === usuarioActual()) || {}).codigo || "ADM",
-    estado: "Por validar",
+  const codigo = $("#w-catastral").value.trim();
+  const e = {
+    id: EDIFICACIONES.length + 1,
+    codigo,
+    ...leerEdificacion("w"),
+    inspecciones: [leerInspeccion("w")],
+    personas: [...estado.personasNuevas],
   };
-  let e = INDICE_CATASTRAL.get(codigo);
-  if (e) {
-    insp.fase = "Reinspección";
-    e.inspecciones.push(insp);
-    e.personas.push(...estado.personasNuevas);
-  } else {
-    insp.fase = sticker === "verde" ? "Inspección rápida" : "Inspección rápida y evaluación en detalle";
-    e = {
-      id: EDIFICACIONES.length + 1,
-      codigo,
-      direccion: $("#i-direccion").value.trim(),
-      comuna: +$("#i-comuna").value,
-      barrio: $("#i-barrio").value.trim() || "Sin barrio",
-      zona: $("input[name=zona]:checked").value === "rural" ? "Rural" : "Urbana",
-      uso: $("#i-uso").value,
-      pisos: +$("#i-pisos").value || 1,
-      sistema: $("#i-sistema").value,
-      periodo: "Sin dato",
-      inspecciones: [insp],
-      personas: [...estado.personasNuevas],
-      cobertura: {
-        asegurada: $("#c-asegurada").checked, aseguradora: $("#c-aseguradora").value, poliza: $("#c-poliza").value || "sin número",
-        hipoteca: $("#c-hipoteca").checked, entidadHipoteca: $("#c-entidad-h").value || "entidad sin registrar",
-        leasing: $("#c-leasing").checked, entidadLeasing: $("#c-entidad-l").value || "entidad sin registrar",
-      },
-      demolicion: "ninguno",
-      contacto: "Sin registrar",
-      exportaciones: [],
-    };
-    EDIFICACIONES.push(e);
-    INDICE_CATASTRAL.set(codigo, e);
-  }
-  pintarPublico(); // las cifras públicas se recalculan
-  aviso("Inspección registrada. Queda pendiente de validación.");
+  EDIFICACIONES.push(e);
+  INDICE_CATASTRAL.set(codigo, e);
+  marcarCambio(); // las cifras públicas se recalculan
+  aviso("Edificación e inspección registradas.");
   location.hash = `#ficha-${e.id}`;
 }
 
-/* ---------- Reportes ---------- */
-function pintarReportes() {
-  const datos = alcance();
-  const colores = { rojo: "var(--rojo)", amarillo: "var(--amarillo)", verde: "var(--verde)" };
-  const porComuna = {};
-  const rango = Object.fromEntries(RANGOS.map((r) => [r, 0]));
-  const vinculo = {}, condicion = { Discapacidad: 0, "Persona vulnerable": 0, "Necesidad especial": 0 }, poblacion = { Civil: 0, Militar: 0, Carcelaria: 0 };
-  let pendientes = 0, sinAseguro = 0, afectadasSinAseguro = 0;
-  for (const e of datos) {
-    const s = stickerDe(e);
-    (porComuna[e.comuna] ||= { rojo: 0, amarillo: 0, verde: 0 })[s]++;
-    if (s !== "verde" && diasDesde(fechaDe(e)) > 45 && e.demolicion === "ninguno") pendientes++;
-    if (!e.cobertura.asegurada) sinAseguro++;
-    for (const p of e.personas) {
-      rango[rangoEtario(edad(p.nacimiento))]++;
-      vinculo[p.vinculo] = (vinculo[p.vinculo] || 0) + 1;
-      p.condiciones.forEach((c) => condicion[c]++);
-      poblacion[p.poblacion]++;
-      if (!e.cobertura.asegurada && p.estado !== "Ileso") afectadasSinAseguro++;
-    }
-  }
-  const filas = Object.entries(porComuna).sort((a, b) => +a[0] - +b[0]);
-  const maxT = Math.max(...filas.map(([, v]) => v.rojo + v.amarillo + v.verde));
-
-  $("#reportes").innerHTML = `
-    <section class="caja" aria-labelledby="r1">
-      <h2 id="r1">Edificaciones por comuna y sticker</h2>
-      <div class="apilada">
-        ${filas.map(([c, v]) => {
-          const t = v.rojo + v.amarillo + v.verde;
-          return `<div class="apilada__fila"><span>Comuna ${c}</span>
-            <span class="apilada__barra" role="img" aria-label="Comuna ${c}: rojo ${v.rojo}, amarillo ${v.amarillo}, verde ${v.verde}" style="width:${(t / maxT) * 100}%">
-              ${["rojo", "amarillo", "verde"].map((s) => `<span style="flex:${v[s]};background:${colores[s]}"></span>`).join("")}
-            </span><span class="num">${fmt(t)}</span></div>`;
-        }).join("")}
-      </div>
-      <ul class="leyenda">${["rojo", "amarillo", "verde"].map((s) => `<li><span class="punto punto--${s}"></span>${STICKER[s].nombre}</li>`).join("")}</ul>
-    </section>
-    <section class="caja" aria-labelledby="r2">
-      <h2 id="r2">Personas por rango de edad</h2>
-      <div class="barras-h" id="rep-edad"></div>
-      <h2 class="mt" id="r3">Personas por vínculo con el inmueble</h2>
-      <div class="barras-h" id="rep-vinculo"></div>
-    </section>
-    <section class="caja" aria-labelledby="r4">
-      <h2 id="r4">Personas con condición especial</h2>
-      <div class="barras-h" id="rep-condicion"></div>
-      <h2 class="mt" id="r5">Personas por tipo de población</h2>
-      <div class="barras-h" id="rep-poblacion"></div>
-    </section>
-    <section class="caja" aria-labelledby="r6">
-      <h2 id="r6">Seguimiento</h2>
-      <div class="indicadores" style="grid-template-columns:1fr 1fr;margin:0">
-        <div class="indicador indicador--amarillo"><span class="indicador__num">${fmt(pendientes)}</span><span class="indicador__txt">Amarillas o rojas sin reinspección hace más de 45 días</span></div>
-        <div class="indicador"><span class="indicador__num">${fmt(sinAseguro)}</span><span class="indicador__txt">Edificaciones no aseguradas</span></div>
-        <div class="indicador indicador--rojo"><span class="indicador__num">${fmt(afectadasSinAseguro)}</span><span class="indicador__txt">Personas afectadas, heridas o fallecidas en edificaciones no aseguradas</span></div>
-        <div class="indicador"><span class="indicador__num">${fmt(datos.length)}</span><span class="indicador__txt">Edificaciones en el reporte</span></div>
-      </div>
-    </section>`;
-  barrasH($("#rep-edad"), RANGOS.map((r) => [r, rango[r]]));
-  barrasH($("#rep-vinculo"), VINCULOS.map((v) => [v, vinculo[v] || 0]));
-  barrasH($("#rep-condicion"), Object.entries(condicion));
-  barrasH($("#rep-poblacion"), Object.entries(poblacion));
-}
-
-/* ---------- Usuarios ---------- */
+/* ---------- Usuarios (RF-01-04, RF-01-05) ---------- */
 function pintarUsuarios() {
   $("#tabla-usuarios tbody").innerHTML = USUARIOS.map((u, i) => `
     <tr>
-      <td><strong>${esc(u.nombre)}</strong>${u.codigo ? `<br><small>Evaluador ${u.codigo}</small>` : ""}</td>
-      <td>${esc(u.usuario)}</td>
+      <td><strong>${esc(u.nombre)}</strong></td>
+      <td>${esc(u.correo)}</td>
       <td>${u.rol}</td>
       <td>${u.activo ? '<span class="etq etq--verde">Activo</span>' : '<span class="etq etq--neutro">Inactivo</span>'}</td>
-      <td><button class="btn btn--fantasma btn--chico" type="button" data-alternar="${i}">${u.activo ? "Desactivar" : "Activar"}</button></td>
+      <td>${u.nombre === usuarioActual()
+        ? '<span class="caja__nota">Su cuenta</span>'
+        : `<button class="btn btn--fantasma btn--chico" type="button" data-alternar="${i}">${u.activo ? "Desactivar" : "Activar"}</button>`}</td>
     </tr>`).join("");
+}
+
+function crearUsuario(ev) {
+  ev.preventDefault();
+  const f = $("#form-usuario");
+  limpiarErrores(f);
+  const nombre = $("#u-nombre"), correo = $("#u-correo"), clave = $("#u-clave");
+  let ok = true;
+  ok = marcarError(nombre, nombre.value.trim() ? "" : "Escriba el nombre completo.") && ok;
+  const c = correo.value.trim().toLowerCase();
+  ok = marcarError(correo, !/^\S+@\S+\.\S+$/.test(c) ? "Escriba un correo válido." : USUARIOS.some((u) => u.correo === c) ? "Ya existe un usuario con ese correo." : "") && ok;
+  ok = marcarError(clave, clave.value.length >= 8 ? "" : "La contraseña inicial debe tener al menos 8 caracteres.") && ok;
+  if (!ok) return;
+  USUARIOS.push({ nombre: nombre.value.trim(), correo: c, rol: $("#u-rol").value, activo: true });
+  $("#dlg-usuario").close();
+  pintarUsuarios();
+  aviso("Usuario creado.");
 }
 
 /* =========================================================
    Enrutador
    ========================================================= */
 const TITULOS = {
-  inicio: "Estado general", stickers: "Qué significa cada sticker", ingresar: "Ingresar",
-  panel: "Panel", edificaciones: "Edificaciones", ficha: "Ficha de edificación", nueva: "Registrar inspección",
-  reportes: "Reportes", usuarios: "Usuarios", "sin-permiso": "Sin acceso",
+  inicio: "Estado general", stickers: "Qué significa cada sticker", ingresar: "Iniciar sesión",
+  panel: "Panel", edificaciones: "Edificaciones", ficha: "Ficha de edificación", nueva: "Registrar edificación",
+  usuarios: "Usuarios", "sin-permiso": "Sin acceso",
 };
-const PERMISO_VISTA = { panel: "panel", edificaciones: "edificaciones", ficha: "ficha", nueva: "registrar", reportes: "reportes", usuarios: "usuarios" };
+const PERMISO_VISTA = { panel: "panel", edificaciones: "edificaciones", ficha: "ficha", nueva: "registrar", usuarios: "usuarios" };
 
 let primeraCarga = true;
 function enrutar() {
-  // Rutas con nombres simples (#panel, #ficha-12, #reinspeccion-760...): el visor de artefactos solo admite #nombre
+  // Rutas con nombres simples (#panel, #ficha-12...): el visor de artefactos solo admite #nombre
   const ruta = location.hash.replace(/^#\/?/, "") || "inicio";
   if (ruta === "contenido") return; // el enlace "Saltar al contenido" no es una ruta
   let vista = ruta, argumento = "";
-  const m = ruta.match(/^(ficha|reinspeccion)-(\w+)$/);
-  if (m) { vista = m[1] === "ficha" ? "ficha" : "nueva"; argumento = m[2]; }
+  const m = ruta.match(/^ficha-(\d+)$/);
+  if (m) { vista = "ficha"; argumento = m[1]; }
   if (!TITULOS[vista]) vista = "inicio";
   const privada = !["inicio", "stickers", "ingresar"].includes(vista);
 
@@ -1027,10 +911,9 @@ function enrutar() {
 
   if (privada) pintarMenu(vista);
   if (vista === "panel") pintarPanel();
-  if (vista === "edificaciones") { $("#t-edif").textContent = estado.rol === "inspector" ? "Mis edificaciones" : "Edificaciones"; pintarConsulta(); }
+  if (vista === "edificaciones") pintarConsulta();
   if (vista === "ficha") pintarFicha(argumento);
-  if (vista === "nueva") reiniciarFormulario(argumento || null);
-  if (vista === "reportes") pintarReportes();
+  if (vista === "nueva") reiniciarFormulario();
   if (vista === "usuarios") pintarUsuarios();
 
   if (!primeraCarga) { window.scrollTo(0, 0); $("#contenido").focus({ preventScroll: true }); }
@@ -1040,15 +923,31 @@ function enrutar() {
 /* =========================================================
    Eventos
    ========================================================= */
+function prepararCatalogos() {
+  $("#f-comuna").innerHTML += opcionesHtml(COMUNAS, null, comunaTxt);
+  $("#f-sector").innerHTML += opcionesHtml(SECTORES);
+  $("#f-vinculo").innerHTML += opcionesHtml(VINCULOS);
+  $("#f-rango").innerHTML += opcionesHtml(RANGOS);
+  $("#f-condicion").innerHTML += opcionesHtml([...CONDICIONES, "Ninguna"]);
+  $("#f-poblacion").innerHTML += opcionesHtml(POBLACIONES);
+  $$("[data-tri]").forEach((s) => (s.innerHTML = '<option value="">Indiferente</option><option value="si">Sí</option><option value="no">No</option>'));
+
+  $("#pe-tipodoc").innerHTML = opcionesHtml(TIPOS_DOC);
+  $("#pe-vinculo").innerHTML = opcionesHtml(VINCULOS);
+  $("#pe-poblacion").innerHTML = opcionesHtml(POBLACIONES);
+  $("#pe-condiciones").insertAdjacentHTML("beforeend", [...CONDICIONES, "Ninguna"].map((c) =>
+    `<label class="check"><input type="checkbox" name="pe-cond" value="${c}"> ${c}</label>`).join(""));
+}
+
 function iniciar() {
   pintarPublico();
-  prepararFormulario();
+  prepararCatalogos();
 
   // Ingreso (simulado)
   $("#form-ingreso").addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const u = $("#usuario"), c = $("#clave");
-    $("#err-usuario").hidden = !!u.value.trim();
+    const u = $("#correo"), c = $("#clave");
+    $("#err-correo").hidden = !!u.value.trim();
     $("#err-clave").hidden = !!c.value.trim();
     u.setAttribute("aria-invalid", String(!u.value.trim()));
     c.setAttribute("aria-invalid", String(!c.value.trim()));
@@ -1068,7 +967,6 @@ function iniciar() {
 
   $("#selector-rol").addEventListener("change", (ev) => {
     estado.rol = ev.target.value;
-    estado.pagina = 1;
     guardarSesion();
     aviso(`Viendo el sistema como ${ROLES[estado.rol].etiqueta.toLowerCase()}.`);
     enrutar();
@@ -1084,11 +982,6 @@ function iniciar() {
   $("#filtros").addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(() => { estado.pagina = 1; pintarConsulta(); }, 120); });
   $("#filtros").addEventListener("submit", (ev) => ev.preventDefault());
   $("#filtros").addEventListener("reset", () => setTimeout(() => { estado.pagina = 1; pintarConsulta(); }));
-  $$(".orden").forEach((b) => b.addEventListener("click", () => {
-    const campo = b.dataset.orden;
-    estado.orden = { campo, dir: estado.orden.campo === campo && estado.orden.dir === "asc" ? "desc" : "asc" };
-    pintarConsulta();
-  }));
   $("#paginas").addEventListener("click", (ev) => {
     const b = ev.target.closest("button[data-pag]");
     if (!b || b.disabled) return;
@@ -1097,45 +990,63 @@ function iniciar() {
     $("#tabla-edif").scrollIntoView({ block: "start", behavior: "smooth" });
   });
 
-  // Formulario de inspección
-  $("#i-catastral").addEventListener("input", revisarDuplicado);
+  // Registro por pasos
+  $("#w-catastral").addEventListener("input", revisarDuplicado);
   $("#btn-siguiente").addEventListener("click", () => { if (validarPaso(estado.pasoActual)) irAPaso(estado.pasoActual + 1); });
   $("#btn-anterior").addEventListener("click", () => irAPaso(estado.pasoActual - 1));
   $("#pasos").addEventListener("click", (ev) => {
     const b = ev.target.closest("[data-ir]");
     if (!b) return;
     const destino = +b.dataset.ir;
-    if (destino > estado.pasoActual && !validarPaso(estado.pasoActual)) return;
+    for (let n = estado.pasoActual; n < destino; n++) if (!validarPaso(n)) return irAPaso(n);
     irAPaso(destino);
   });
-  $("#evaluaciones").addEventListener("change", actualizarGlobal);
-  $("#elige-sticker").addEventListener("change", () => { $("#err-sticker")?.remove(); actualizarGlobal(); });
-  $("#porcentajes").addEventListener("input", actualizarSuma);
-  $("#btn-agregar-persona").addEventListener("click", agregarPersona);
+  $("#btn-agregar-persona").addEventListener("click", () => abrirPersona(estado.personasNuevas, null, pintarPersonasNuevas));
   $("#tabla-personas-nueva").addEventListener("click", (ev) => {
-    const b = ev.target.closest("[data-quitar]");
+    const b = ev.target.closest("button");
     if (!b) return;
-    estado.personasNuevas.splice(+b.dataset.quitar, 1);
-    pintarPersonasNuevas();
+    if (b.dataset.quitar !== undefined) { estado.personasNuevas.splice(+b.dataset.quitar, 1); pintarPersonasNuevas(); }
+    if (b.dataset.editar !== undefined) abrirPersona(estado.personasNuevas, +b.dataset.editar, pintarPersonasNuevas);
   });
-  $("#p-nac").addEventListener("input", (ev) => {
-    const v = ev.target.value;
-    $("#p-rango").textContent = v ? `${edad(v)} años: ${rangoEtario(edad(v))}` : "";
+  $("#form-insp").addEventListener("submit", registrarEdificacion);
+
+  // Diálogos
+  $$("[data-cerrar]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
+  $("#form-persona").addEventListener("submit", guardarPersona);
+  $("#pe-tipodoc").addEventListener("change", actualizarDocumento);
+  $("#pe-nac").addEventListener("input", actualizarRango);
+  // "Ninguna" excluye las demás condiciones (RF-03-01 CA-3)
+  $("#pe-condiciones").addEventListener("change", (ev) => {
+    const c = ev.target;
+    const ninguna = $("input[name=pe-cond][value=Ninguna]");
+    if (c.value === "Ninguna" && c.checked) $$("input[name=pe-cond]").forEach((x) => { if (x !== c) x.checked = false; });
+    else if (c.checked) ninguna.checked = false;
+    if (!$("input[name=pe-cond]:checked")) ninguna.checked = true;
   });
-  $$("[data-revela]").forEach((c) => c.addEventListener("change", () => ($("#" + c.dataset.revela).hidden = !c.checked)));
-  $("#form-insp").addEventListener("submit", registrarInspeccion);
+
+  $("#form-edif").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    if (!validarEdificacion("de")) return;
+    Object.assign(edifEnEdicion, leerEdificacion("de"));
+    $("#dlg-edif").close();
+    marcarCambio();
+    pintarFicha(edifEnEdicion.id);
+    aviso("Edificación actualizada.");
+  });
+
+  $("#form-dlg-insp").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    if (!validarInspeccion("di")) return;
+    edifEnInspeccion.inspecciones.push(leerInspeccion("di"));
+    $("#dlg-insp").close();
+    marcarCambio();
+    pintarFicha(edifEnInspeccion.id);
+    aviso("Inspección registrada. El sticker vigente es el de la inspección más reciente.");
+  });
 
   // Usuarios
-  $("#btn-crear-usuario").addEventListener("click", () => $("#dlg-usuario").showModal());
-  $("#dlg-usuario").addEventListener("close", () => {
-    const d = $("#dlg-usuario");
-    if (d.returnValue === "crear" && $("#u-nombre").value.trim() && $("#u-usuario").value.trim()) {
-      USUARIOS.push({ nombre: $("#u-nombre").value.trim(), usuario: $("#u-usuario").value.trim(), rol: $("#u-rol").value, activo: true });
-      pintarUsuarios();
-      aviso("Usuario creado.");
-    }
-    $("#form-usuario").reset();
-  });
+  $("#btn-crear-usuario").addEventListener("click", () => { $("#form-usuario").reset(); limpiarErrores($("#form-usuario")); $("#dlg-usuario").showModal(); });
+  $("#form-usuario").addEventListener("submit", crearUsuario);
   $("#tabla-usuarios").addEventListener("click", (ev) => {
     const b = ev.target.closest("[data-alternar]");
     if (!b) return;
