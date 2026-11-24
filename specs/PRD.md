@@ -70,7 +70,8 @@ Un aplicativo web, simple y desplegado en producción, en el que los inspectores
 | RNF-03 | Interfaz responsive: usable en celular (≥ 360 px) y escritorio |
 | RNF-04 | La consulta con filtros responde en < 2 s con ≈ 6.000 edificaciones y ≈ 20.000 personas (sin contar el arranque en frío de Render) |
 | RNF-05 | Sin credenciales ni datos reales en el repositorio; configuración por variables de entorno |
-| RNF-06 | Pruebas automáticas del backend para las reglas de negocio (RN-01 a RN-11) ejecutadas en CI antes de desplegar |
+| RNF-06 | Pruebas unitarias y de integración del backend para las reglas de negocio (RN-01 a RN-11) y unitarias de la lógica del frontend, ejecutadas en CI antes de desplegar; cobertura mínima 80 % global y 90 % en servicios (TESTING.md) |
+| RNF-07 | Despliegue continuo: todo cambio llega a producción solo por PR fusionado con CI en verde, se verifica con una prueba de humo y se puede revertir en minutos (INFRA §5, §7) |
 
 ---
 

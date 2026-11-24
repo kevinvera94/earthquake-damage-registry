@@ -1,5 +1,5 @@
 # INFRA.md — Despliegue, configuración y CI/CD
-> BRIEF §12, §12.1 · PRD RNF-01, RNF-05, RNF-06
+> BRIEF §12, §12.1 · PRD RNF-01, RNF-05, RNF-06, RNF-07 · TASKS FASE-01
 
 ---
 
@@ -69,21 +69,72 @@ services:
 - No usar el *transaction pooler* (6543): rompe los *prepared statements* de psycopg
 - `pool_size=5`, `max_overflow=0`, `pool_pre_ping=True`: el plan gratuito limita conexiones
 
-## 5. CI — GitHub Actions (`.github/workflows/ci.yml`)
-Se ejecuta en cada PR y en cada push a `main`:
-
+## 5. CI/CD — GitHub Actions
+### 5.1 `ci.yml` — en cada PR y en cada push a `main`
 | Job | Pasos |
 |---|---|
-| `backend` | Servicio `postgres:16` → `pip install` → `flake8` + `black --check` → `alembic upgrade head` → `pytest` |
-| `frontend` | `npm ci` → `npm run lint` → `npm run build` |
+| `backend` | Servicio `postgres:16` → `pip install -r requirements.txt -r requirements-dev.txt` → `flake8` + `black --check` → `alembic upgrade head` → `pytest --cov=app --cov-fail-under=80` (TESTING §2.4) |
+| `frontend` | `npm ci` → `npm run lint` → `npm test` (Vitest) → `npm run build` |
 
-- La rama `main` exige que CI pase antes de fusionar (protección de rama en GitHub)
-- Render y Vercel despliegan al fusionar en `main`: **si CI falla no se fusiona, y si no se fusiona no se despliega** (CLAUDE.md: no desplegar sin tests)
-- En CI, las pruebas de auth generan sus propios JWT firmados con una llave de prueba; no llaman a Supabase
+- Variables de CI: `TEST_DATABASE_URL` apunta al servicio Postgres del job; **nunca** a Supabase (TESTING §4)
+- Las pruebas de auth generan sus propios JWT con una llave RSA de prueba; no llaman a Supabase
+- CI no necesita secretos de producción
+
+### 5.2 Despliegue continuo
+- **Protección de `main`:** PR obligatorio, *checks* `backend` y `frontend` obligatorios, 1 aprobación, sin push directo
+- **Render:** *Auto-Deploy* = "After CI Checks Pass" sobre `main`
+- **Vercel:** `main` → producción; cada PR → *preview deployment* con su URL en el PR
+- **Resultado:** si CI falla no se fusiona, y si no se fusiona no se despliega (CLAUDE.md: no desplegar sin tests)
+
+### 5.3 `smoke.yml` — verificación post-despliegue (T-04d)
+- **Disparadores:** `deployment_status` exitoso en producción, `workflow_dispatch` (manual) y `schedule` cada 2 días
+- **Comprobaciones** (con reintentos durante ~2 min por el arranque en frío): `GET /api/health` = 200, `GET /api/public/stats` = 200 sin token, `GET <frontend>/` = 200
+- **Secretos de GitHub:** solo `PROD_API_URL` y `PROD_FRONTEND_URL` (no son sensibles, pero no se escriben en el YAML para poder cambiarlas)
 
 ## 6. Operación en capa gratuita
 | Riesgo | Acción |
 |---|---|
 | Render dormido (≈ 1 min) | El frontend muestra "Despertando el servidor…" si `/api/health` tarda; abrir el sitio 2 minutos antes de la demo |
-| Supabase pausado (7 días sin uso) | Cualquier petición mantiene la actividad; verificar el 29-nov |
+| Supabase pausado (7 días sin uso) | `/api/health` ejecuta `SELECT 1` y `smoke.yml` lo llama cada 2 días; verificar el 29-nov |
 | Cuenta única en Vercel Hobby | Un integrante es dueño de las tres cuentas (BRIEF P-02) y comparte las variables por un canal privado |
+
+## 7. Runbook de despliegue
+> Lo completa y ensaya el carril E en T-04e. Debe permitir que **otro** integrante despliegue y revierta sin ayuda.
+
+### 7.1 Dueños y accesos
+| Plataforma | Dueño de la cuenta | Quién más tiene acceso | Dónde están los secretos |
+|---|---|---|---|
+| GitHub (repo, *Actions*, *Secrets*) | *por asignar* | Todo el equipo (colaboradores) | GitHub → Settings → Secrets |
+| Supabase | *por asignar* | *por definir* | Gestor privado del equipo |
+| Render | *por asignar* | *por definir* | Render → Environment |
+| Vercel | *por asignar* | — (Hobby: una cuenta) | Vercel → Environment Variables |
+
+### 7.2 Primer despliegue (una sola vez, T-04b)
+1. Supabase: crear proyecto → copiar la cadena del **session pooler**, `SUPABASE_URL` y `service_role` key
+2. Render: *New → Blueprint* desde el repositorio (`render.yaml`) → cargar variables (§2) → primer despliegue → `alembic upgrade head` corre en el build
+3. Desde local, con las variables de producción: `python -m scripts.create_admin`
+4. Vercel: *Add New → Project* → *root directory* `frontend/` → variables (§2) → desplegar
+5. Render: actualizar `FRONTEND_ORIGIN` con la URL de Vercel y redesplegar
+6. Ejecutar `smoke.yml` manualmente y abrir el sitio
+
+### 7.3 Despliegue habitual
+Fusionar un PR en `main` → CI pasa → Render y Vercel despliegan solos → `smoke.yml` corre. **Nadie despliega a mano.**
+
+Verificación tras cada despliegue: *smoke* en verde en *Actions*; si el PR tocó la BD, revisar en el log de Render que `alembic upgrade head` terminó sin errores.
+
+### 7.4 Reversión (*rollback*)
+| Pieza | Cómo | Cuándo |
+|---|---|---|
+| Frontend | Vercel → Deployments → despliegue anterior → *Instant Rollback* | Error visible en la interfaz |
+| Backend | Render → Events/Deploys → despliegue anterior → *Rollback* | *Smoke* rojo, errores 5xx |
+| Código | `git revert` del PR en una rama nueva → PR → fusión (deja `main` coherente con lo desplegado) | Siempre, después del *rollback* |
+| Base de datos | Las migraciones son **solo hacia adelante**: un error se corrige con una nueva migración. Antes de fusionar una migración destructiva (borrar o renombrar columnas), avisar en el grupo | Migración defectuosa |
+
+> El *rollback* del backend **no** deshace migraciones. Por eso las migraciones deben ser compatibles con la versión anterior del código (agregar antes de quitar).
+
+### 7.5 Lista de chequeo antes de la entrega (T-23)
+- [ ] `smoke.yml` en verde en las últimas 24 h
+- [ ] Supabase activo (no pausado) y con los datos ficticios cargados
+- [ ] Render despierto 2 minutos antes de la demo
+- [ ] Credenciales de demostración enviadas al profesor por canal privado
+- [ ] Etiqueta `v1.0.0` en `main` coincide con lo desplegado

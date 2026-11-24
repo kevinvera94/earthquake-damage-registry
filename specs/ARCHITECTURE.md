@@ -33,7 +33,7 @@ flowchart LR
 |---|---|---|
 | P-1 | **El frontend nunca toca la base de datos.** Solo usa Supabase para el login | Un solo lugar para reglas y permisos (RNF-02); evita duplicar validaciones en políticas RLS |
 | P-2 | **RLS activado sin políticas** en todas las tablas de `public` | Si alguien usa la clave pública de Supabase contra PostgREST, no obtiene nada. El backend se conecta con un rol de BD que salta RLS |
-| P-3 | **Las reglas de negocio se prueban en el backend** con pytest sobre PostgreSQL real (CI) | RNF-06; los índices únicos y las consultas dependen de PostgreSQL, SQLite no sirve de sustituto |
+| P-3 | **Las reglas de negocio se prueban** con pruebas unitarias (lógica pura) y de integración con pytest sobre PostgreSQL real, en CI (ver TESTING.md) | RNF-06; los índices únicos y las consultas dependen de PostgreSQL, SQLite no sirve de sustituto |
 | P-4 | **Lo que se puede derivar no se digita** (edad, rango, sticker vigente) | RN-02, RN-07 |
 | P-5 | **Configuración solo por variables de entorno** | CLAUDE.md; el repositorio es público |
 | P-6 | **Sin dependencias que no paguen su costo** en 7 días | Nada de gestores de estado, ORMs en el frontend ni colas |
@@ -44,13 +44,15 @@ flowchart LR
 | [`DATA-MODEL.md`](arch/DATA-MODEL.md) | Tablas, catálogos (enums), índices y cómo se implementa cada regla de negocio |
 | [`API.md`](arch/API.md) | Endpoints, parámetros de filtro, respuestas y códigos de error |
 | [`AUTH.md`](arch/AUTH.md) | Login, verificación del JWT, roles, creación y desactivación de usuarios |
-| [`INFRA.md`](arch/INFRA.md) | Despliegue, variables de entorno, CI/CD (YAML) y operación en capa gratuita |
+| [`INFRA.md`](arch/INFRA.md) | Despliegue, variables de entorno, CI/CD (YAML), operación en capa gratuita y runbook de despliegue y reversión |
+| [`TESTING.md`](arch/TESTING.md) | Estrategia de pruebas: unitarias, integración, humo y aceptación; cobertura mínima; matriz regla → prueba |
 | `ALGORITHMS.md` | Análisis de complejidad (BRIEF §13). Se redacta en la fase final (RF-06-03) |
 
 ## 5. Estructura de carpetas definitiva
 ```
 earthquake-damage-registry/
-  .github/workflows/ci.yml        ← lint + tests backend + build frontend
+  .github/workflows/ci.yml        ← lint + pruebas (unitarias e integración) + build
+  .github/workflows/smoke.yml     ← verificación post-despliegue y keep-alive
   render.yaml                     ← blueprint del backend en Render
   backend/
     app/
@@ -69,7 +71,8 @@ earthquake-damage-registry/
       create_admin.py             ← RF-01-06
       seed.py                     ← RF-06-01 generador de datos ficticios
     tests/
-    requirements.txt
+      unit/ · integration/        ← ver TESTING.md §2.1
+    requirements.txt · requirements-dev.txt
     .env.example
   frontend/
     src/
@@ -77,6 +80,7 @@ earthquake-damage-registry/
       lib/supabase.js · lib/api.js
       pages/                      ← Public, Login, Buildings, BuildingDetail, BuildingForm, Users
       components/                 ← StickerBadge, Filters, PeopleTable, DemoBanner…
+      lib/*.test.js               ← pruebas unitarias con Vitest
     .env.example
   specs/
 ```

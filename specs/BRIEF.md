@@ -279,10 +279,10 @@ Se documenta en `specs/arch/ALGORITHMS.md` el análisis de complejidad de dos op
 | Fecha | Hito |
 |---|---|
 | 23 nov | BRIEF v1.0, PRD, ARCHITECTURE y TASKS |
-| 24 nov | **Esqueleto desplegado en producción** (frontend, backend y BD conectados) + autenticación |
+| 24 nov | **Configuración del despliegue a producción**: esqueletos, infraestructura de pruebas, CI/CD y verificación post-despliegue; luego autenticación |
 | 25 – 26 nov | Registro de edificaciones, inspecciones y personas; área pública |
 | 27 nov | Consulta con filtros y PDF |
-| 28 nov | Generador de datos ficticios, pruebas, documento de algoritmos |
+| 28 nov | Generador de datos ficticios, revisión de cobertura de pruebas, documento de algoritmos |
 | 29 nov | Congelamiento; verificar que producción esté activa |
 | **30 nov** | **Entrega** |
 
@@ -293,7 +293,7 @@ Se documenta en `specs/arch/ALGORITHMS.md` el análisis de complejidad de dos op
 earthquake-damage-registry/
   specs/
     BRIEF.md · PRD.md · ARCHITECTURE.md · DESIGN.md · TASKS.md · DECISIONS.md
-    arch/      ← DATA-MODEL, API, AUTH, INFRA, ALGORITHMS
+    arch/      ← DATA-MODEL, API, AUTH, INFRA, TESTING, ALGORITHMS
     prd/       ← MOD-XX.md
     tasks/     ← FASE-XX.md
   frontend/

@@ -72,3 +72,17 @@
 - **Contexto:** Plazo de 7 días y equipo de 6 con niveles distintos
 - **Decisión:** React + Vite en JavaScript, React Router y `fetch` envuelto en `lib/api.js`. Sin TypeScript, Redux ni React Query
 - **Consecuencias:** Menos configuración y curva; se pierde el tipado. El contrato queda documentado en OpenAPI (`/docs`)
+
+### DEC-009 — Estrategia de pruebas: unitarias + integración con cobertura mínima
+- **Fecha:** 2026-11-23
+- **Estado:** Aceptada
+- **Contexto:** CLAUDE.md prohíbe desplegar sin pruebas. Se necesita decidir qué niveles de prueba caben en 7 días
+- **Decisión:** pytest con pruebas unitarias de `app/services/` y de integración contra PostgreSQL 16 real; Vitest para las funciones puras de `frontend/src/lib/`; cobertura mínima de 80 % global y 90 % en servicios, exigida en CI. Sin pruebas E2E automatizadas ni de componentes: los flujos se cubren con aceptación manual (ver `arch/TESTING.md`)
+- **Consecuencias:** Las reglas de negocio quedan protegidas y trazables (matriz regla → prueba). Contra: la interfaz solo se prueba a mano
+
+### DEC-010 — Despliegue continuo condicionado a CI, configurado antes de la funcionalidad
+- **Fecha:** 2026-11-23
+- **Estado:** Aceptada
+- **Contexto:** El mayor riesgo de entrega es dejar el despliegue para el final
+- **Decisión:** FASE-01 completa configura el camino PR → CI → producción: protección de `main`, Render con *auto-deploy* después de CI, Vercel con *previews*, prueba de humo post-despliegue y un runbook de reversión ensayado (`arch/INFRA.md` §5, §7)
+- **Consecuencias:** Cada PR fusionado llega solo a producción y se verifica; nadie despliega a mano. Contra: la funcionalidad empieza medio día después
