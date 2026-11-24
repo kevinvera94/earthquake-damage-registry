@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro de Edificaciones Sismo 2026</title>
+  <meta name="description" content="Mockup académico del aplicativo de registro de inspecciones de edificaciones tras el sismo del 10 de agosto de 2026 en Cali. Datos ficticios.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <!-- Franja superior: aviso académico obligatorio (BRIEF RN-12, RF-06-02) -->
+  <div class="franja" role="note">
+    <div class="wrap franja__in">
+      <strong>Datos ficticios con fines académicos.</strong>
+      <span>No es una fuente oficial ni está afiliado a la Alcaldía de Santiago de Cali, la UNGRD ni el IDIGER.</span>
+    </div>
+  </div>
+
+  <!-- ===================== ENCABEZADO PÚBLICO ===================== -->
+  <header class="cabecera" id="cabecera-publica">
+    <div class="wrap cabecera__in">
+      <a class="marca" href="#inicio" aria-label="Registro de Edificaciones, ir al inicio">
+        <svg class="marca__icono" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="6" fill="currentColor"/>
+          <path d="M9 31V15l11-6 11 6v16H9Z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M21 13l-3 6 4 3-3 6" fill="none" stroke="#F2C200" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="marca__texto">
+          <span class="marca__nombre">Registro de Edificaciones</span>
+          <span class="marca__sub">Sismo del 10 de agosto de 2026, Santiago de Cali</span>
+        </span>
+      </a>
+      <nav class="nav-publica" aria-label="Principal">
+        <a href="#inicio" data-ruta="inicio">Estado general</a>
+        <a href="#stickers" data-ruta="stickers">Qué significa cada sticker</a>
+        <a class="btn btn--primario" href="#ingresar" data-ruta="ingresar">Iniciar sesión</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================== ENCABEZADO PRIVADO ===================== -->
+  <header class="cabecera cabecera--app" id="cabecera-privada" hidden>
+    <div class="wrap wrap--app cabecera__in">
+      <button class="btn-menu" id="btn-menu" aria-expanded="false" aria-controls="lateral">
+        <span aria-hidden="true">☰</span><span class="sr">Menú</span>
+      </button>
+      <a class="marca marca--compacta" href="#panel" aria-label="Ir al panel">
+        <svg class="marca__icono" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="6" fill="currentColor"/>
+          <path d="M9 31V15l11-6 11 6v16H9Z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M21 13l-3 6 4 3-3 6" fill="none" stroke="#F2C200" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="marca__texto">
+          <span class="marca__nombre">Registro de Edificaciones</span>
+          <span class="marca__sub">Área privada</span>
+        </span>
+      </a>
+      <div class="usuario">
+        <label class="usuario__rol">
+          <span>Ver como</span>
+          <select id="selector-rol" aria-describedby="nota-rol">
+            <option value="admin">Administrador</option>
+            <option value="inspector">Inspector</option>
+          </select>
+        </label>
+        <span class="usuario__nombre" id="nombre-usuario">Mariana Ortiz</span>
+        <a class="btn btn--fantasma btn--chico" href="#inicio" id="btn-salir">Cerrar sesión</a>
+      </div>
+    </div>
+    <p class="sr" id="nota-rol">Control solo del mockup: cambia el rol para ver qué menú y permisos tiene cada uno.</p>
+  </header>
+
+  <div class="cuerpo" id="cuerpo">
+    <!-- Menú lateral del área privada -->
+    <nav class="lateral" id="lateral" aria-label="Área privada" hidden>
+      <ul id="menu-privado"></ul>
+    </nav>
+
+    <main id="contenido" tabindex="-1">
+
+      <!-- ===================== PÚBLICO: ESTADO GENERAL (MOD-05) ===================== -->
+      <section class="vista" data-vista="inicio" aria-labelledby="t-inicio">
+        <div class="portada">
+          <div class="wrap">
+            <p class="portada__fecha" id="fecha-actualizacion"></p>
+            <h1 id="t-inicio">Estado de las edificaciones inspeccionadas tras el sismo</h1>
+            <p class="portada__intro">Cifras consolidadas de las inspecciones en Cali. Esta página solo muestra totales: no publica direcciones, códigos catastrales ni datos de personas.</p>
+
+            <div class="total" aria-describedby="leyenda-barra">
+              <p class="total__num"><span id="total-edif"></span> edificaciones inspeccionadas</p>
+              <div class="barra" id="barra-stickers" role="img"></div>
+              <ul class="leyenda" id="leyenda-barra"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="wrap bloque">
+          <h2>Stickers vigentes</h2>
+          <div class="stickers" id="tarjetas-sticker"></div>
+        </div>
+
+        <div class="wrap bloque bloque--dos">
+          <div>
+            <h2>Edificaciones por comuna</h2>
+            <div class="tabla-envoltura">
+              <table class="tabla" id="tabla-comunas">
+                <caption class="sr">Edificaciones inspeccionadas por comuna y color de sticker vigente</caption>
+                <thead><tr><th scope="col">Comuna</th><th scope="col" class="num">Rojo</th><th scope="col" class="num">Amarillo</th><th scope="col" class="num">Verde</th><th scope="col" class="num">Total</th></tr></thead>
+                <tbody></tbody>
+                <tfoot></tfoot>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h2>Personas registradas por rango de edad</h2>
+            <div class="barras-h" id="barras-edad"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PÚBLICO: STICKERS (estática) ===================== -->
+      <section class="vista" data-vista="stickers" aria-labelledby="t-stickers" hidden>
+        <div class="wrap bloque">
+          <h1 id="t-stickers">Qué significa cada sticker</h1>
+          <p class="lead">Después de la inspección, el profesional evaluador instala en la fachada un sticker que indica si la edificación se puede usar. Solo el personal autorizado puede cambiarlo, y únicamente registrando una nueva inspección: la anterior queda en el historial.</p>
+          <div class="explica" id="explica-stickers"></div>
+        </div>
+      </section>
+
+      <!-- ===================== PÚBLICO: INGRESAR (MOD-01) ===================== -->
+      <section class="vista" data-vista="ingresar" aria-labelledby="t-ingresar" hidden>
+        <div class="wrap ingreso">
+          <div class="ingreso__caja">
+            <h1 id="t-ingresar">Ingresar al área privada</h1>
+            <p>Para personal autorizado: administradores e inspectores.</p>
+            <form id="form-ingreso" novalidate>
+              <div class="campo">
+                <label for="correo">Correo electrónico</label>
+                <input id="correo" name="correo" type="email" autocomplete="username" required>
+                <p class="campo__error" id="err-correo" hidden>Escriba su correo.</p>
+              </div>
+              <div class="campo">
+                <label for="clave">Contraseña</label>
+                <input id="clave" name="clave" type="password" autocomplete="current-password" required>
+                <p class="campo__error" id="err-clave" hidden>Escriba su contraseña.</p>
+              </div>
+              <button class="btn btn--primario btn--ancho" type="submit">Ingresar</button>
+            </form>
+            <p class="ingreso__nota">Las cuentas las crea el administrador del sistema. Si no tiene una, solicítela a su coordinador.</p>
+            <p class="ingreso__mock">Mockup: cualquier correo y contraseña permiten entrar. No escriba datos reales.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PRIVADO: PANEL ===================== -->
+      <section class="vista vista--app" data-vista="panel" aria-labelledby="t-panel" hidden>
+        <div class="app-cab">
+          <h1 id="t-panel">Panel</h1>
+          <a class="btn btn--primario" href="#nueva">Registrar edificación</a>
+        </div>
+        <div class="indicadores" id="indicadores-panel"></div>
+        <section class="caja" aria-labelledby="t-recientes">
+          <div class="caja__cab">
+            <h2 id="t-recientes">Inspecciones recientes</h2>
+            <a href="#edificaciones">Ver todas las edificaciones</a>
+          </div>
+          <ul class="recientes" id="recientes"></ul>
+        </section>
+      </section>
+
+      <!-- ===================== PRIVADO: CONSULTA (MOD-04) ===================== -->
+      <section class="vista vista--app" data-vista="edificaciones" aria-labelledby="t-edif" hidden>
+        <div class="app-cab">
+          <h1 id="t-edif">Edificaciones</h1>
+          <a class="btn btn--primario" href="#nueva">Registrar edificación</a>
+        </div>
+
+        <form class="filtros" id="filtros" aria-label="Filtros">
+          <div class="filtros__fila">
+            <div class="campo">
+              <label for="f-codigo">Código catastral</label>
+              <input id="f-codigo" type="search" inputmode="numeric" placeholder="Contiene…">
+            </div>
+            <div class="campo">
+              <label for="f-comuna">Comuna</label>
+              <select id="f-comuna"><option value="">Todas</option></select>
+            </div>
+            <div class="campo">
+              <label for="f-barrio">Barrio</label>
+              <input id="f-barrio" type="search" placeholder="Contiene…">
+            </div>
+            <div class="campo">
+              <label for="f-sector">Sector / uso</label>
+              <select id="f-sector"><option value="">Todos</option></select>
+            </div>
+          </div>
+
+          <div class="filtros__fila">
+            <fieldset class="grupo grupo--linea">
+              <legend>Sticker vigente</legend>
+              <label class="check"><input type="checkbox" name="f-sticker" value="rojo"> Rojo</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="amarillo"> Amarillo</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="verde"> Verde</label>
+              <label class="check"><input type="checkbox" name="f-sticker" value="sin"> Sin inspeccionar</label>
+            </fieldset>
+            <div class="campo">
+              <label for="f-desde">Última inspección desde</label>
+              <input id="f-desde" type="date">
+            </div>
+            <div class="campo">
+              <label for="f-hasta">Última inspección hasta</label>
+              <input id="f-hasta" type="date">
+            </div>
+          </div>
+
+          <details class="filtros__mas">
+            <summary>Más filtros: cobertura y personas</summary>
+            <div class="filtros__fila">
+              <div class="campo"><label for="f-asegurada">Asegurada</label><select id="f-asegurada" data-tri></select></div>
+              <div class="campo"><label for="f-hipoteca">Con hipoteca</label><select id="f-hipoteca" data-tri></select></div>
+              <div class="campo"><label for="f-leasing">Con leasing</label><select id="f-leasing" data-tri></select></div>
+            </div>
+            <p class="campo__ayuda">Filtros de personas: la edificación aparece si una misma persona cumple todos los que elija.</p>
+            <div class="filtros__fila">
+              <div class="campo"><label for="f-vinculo">Vínculo</label><select id="f-vinculo"><option value="">Todos</option></select></div>
+              <div class="campo"><label for="f-rango">Rango etario</label><select id="f-rango"><option value="">Todos</option></select></div>
+              <div class="campo"><label for="f-condicion">Condición especial</label><select id="f-condicion"><option value="">Todas</option></select></div>
+              <div class="campo"><label for="f-poblacion">Tipo de población</label><select id="f-poblacion"><option value="">Todas</option></select></div>
+            </div>
+          </details>
+
+          <div class="filtros__pie">
+            <p class="resultado" id="conteo" aria-live="polite"></p>
+            <button class="btn btn--fantasma btn--chico" type="reset" id="limpiar">Limpiar filtros</button>
+          </div>
+        </form>
+
+        <div class="tabla-envoltura">
+          <table class="tabla tabla--datos" id="tabla-edif">
+            <caption class="sr">Resultados de la consulta de edificaciones, ordenados por la última inspección más reciente</caption>
+            <thead>
+              <tr>
+                <th scope="col">Código catastral</th>
+                <th scope="col">Dirección</th>
+                <th scope="col">Comuna y barrio</th>
+                <th scope="col">Sector</th>
+                <th scope="col">Sticker</th>
+                <th scope="col">Última inspección</th>
+                <th scope="col" class="num">Personas</th>
+                <th scope="col"><span class="sr">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <nav class="paginas" id="paginas" aria-label="Páginas de resultados"></nav>
+      </section>
+
+      <!-- ===================== PRIVADO: FICHA (RF-04-03) ===================== -->
+      <section class="vista vista--app" data-vista="ficha" aria-labelledby="t-ficha" hidden>
+        <div id="ficha"></div>
+      </section>
+
+      <!-- ===================== PRIVADO: REGISTRAR EDIFICACIÓN (3 pasos) ===================== -->
+      <section class="vista vista--app" data-vista="nueva" aria-labelledby="t-nueva" hidden>
+        <div class="app-cab">
+          <h1 id="t-nueva">Registrar edificación</h1>
+        </div>
+        <ol class="pasos" id="pasos"></ol>
+
+        <form id="form-insp" class="caja form-insp" novalidate>
+          <!-- Paso 1: edificación y cobertura (RF-02-01, RF-02-02) -->
+          <fieldset class="paso" data-paso="1">
+            <legend>Edificación y cobertura</legend>
+            <div class="campo">
+              <label for="w-catastral">Código catastral</label>
+              <input id="w-catastral" inputmode="numeric" aria-describedby="ayuda-catastral">
+              <p class="campo__ayuda" id="ayuda-catastral">Primero se busca el código. Si la edificación ya existe, la reinspección se registra desde su ficha. Pruebe con 7600101020041.</p>
+              <p class="aviso aviso--info" id="aviso-duplicado" hidden></p>
+            </div>
+            <div id="w-edif"></div>
+          </fieldset>
+
+          <!-- Paso 2: inspección (RF-02-04) -->
+          <fieldset class="paso" data-paso="2" hidden>
+            <legend>Inspección</legend>
+            <div id="w-insp"></div>
+          </fieldset>
+
+          <!-- Paso 3: personas ocupantes (MOD-03) -->
+          <fieldset class="paso" data-paso="3" hidden>
+            <legend>Personas ocupantes</legend>
+            <p class="campo__ayuda">Registre una a una las personas propietarias y arrendatarias. La edad y el rango etario se calculan con la fecha de nacimiento. Puede dejar este paso vacío y agregarlas después desde la ficha.</p>
+            <div class="tabla-envoltura">
+              <table class="tabla" id="tabla-personas-nueva">
+                <thead><tr><th scope="col">Nombre</th><th scope="col">Documento</th><th scope="col">Vínculo</th><th scope="col">Rango etario</th><th scope="col">Condición</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="mt-chico"><button class="btn btn--secundario" type="button" id="btn-agregar-persona">Agregar persona</button></p>
+          </fieldset>
+
+          <div class="form-insp__pie">
+            <button class="btn btn--fantasma" type="button" id="btn-anterior">Anterior</button>
+            <button class="btn btn--primario" type="button" id="btn-siguiente">Siguiente</button>
+            <button class="btn btn--primario" type="submit" id="btn-registrar" hidden>Registrar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ===================== PRIVADO: USUARIOS (RF-01-04, RF-01-05) ===================== -->
+      <section class="vista vista--app" data-vista="usuarios" aria-labelledby="t-usuarios" hidden>
+        <div class="app-cab">
+          <h1 id="t-usuarios">Usuarios</h1>
+          <button class="btn btn--primario" type="button" id="btn-crear-usuario">Crear usuario</button>
+        </div>
+        <p class="lead lead--app">Solo el administrador crea cuentas. No existe registro público. Los usuarios no se borran: se desactivan.</p>
+        <div class="tabla-envoltura">
+          <table class="tabla tabla--datos" id="tabla-usuarios">
+            <thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col"><span class="sr">Acciones</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===================== PRIVADO: SIN PERMISO ===================== -->
+      <section class="vista vista--app" data-vista="sin-permiso" aria-labelledby="t-sinpermiso" hidden>
+        <div class="vacio-grande">
+          <h1 id="t-sinpermiso">Su rol no tiene acceso a esta sección</h1>
+          <p>Si necesita este permiso, pídaselo al administrador.</p>
+          <a class="btn btn--primario" href="#panel">Volver al panel</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="pie" id="pie">
+    <div class="wrap pie__in">
+      <p><strong>Registro de Edificaciones</strong>. Proyecto del curso Análisis de Algoritmos, desarrollado con metodología SDD.</p>
+      <p>Datos ficticios con fines académicos. Este sitio no es una fuente oficial.</p>
+    </div>
+  </footer>
+
+  <!-- Diálogo: crear usuario -->
+  <dialog class="dialogo" id="dlg-usuario" aria-labelledby="t-dlg-usuario">
+    <form id="form-usuario" novalidate>
+      <h2 id="t-dlg-usuario">Crear usuario</h2>
+      <div class="campo"><label for="u-nombre">Nombre completo</label><input id="u-nombre" required></div>
+      <div class="campo"><label for="u-correo">Correo electrónico</label><input id="u-correo" type="email" required></div>
+      <div class="campo"><label for="u-rol">Rol</label><select id="u-rol"><option>Inspector</option><option>Administrador</option></select></div>
+      <div class="campo"><label for="u-clave">Contraseña inicial</label><input id="u-clave" type="password" autocomplete="new-password" required></div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Crear usuario</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: editar edificación (RF-02-03) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-edif" aria-labelledby="t-dlg-edif">
+    <form id="form-edif" novalidate>
+      <h2 id="t-dlg-edif">Editar edificación</h2>
+      <p class="campo__ayuda" id="de-codigo"></p>
+      <div id="de-campos"></div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: nueva inspección o reinspección desde la ficha (RF-02-04) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-insp" aria-labelledby="t-dlg-insp">
+    <form id="form-dlg-insp" novalidate>
+      <h2 id="t-dlg-insp">Registrar inspección</h2>
+      <p class="campo__ayuda">La inspección no se puede editar ni borrar después. Si hay un error, se registra una nueva.</p>
+      <div id="di-campos"></div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit">Registrar inspección</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: agregar o editar persona (RF-03-01, RF-03-04) -->
+  <dialog class="dialogo dialogo--ancho" id="dlg-persona" aria-labelledby="t-dlg-persona">
+    <form id="form-persona" novalidate>
+      <h2 id="t-dlg-persona">Agregar persona</h2>
+      <p class="aviso aviso--error" id="pe-dup" hidden></p>
+      <div class="rejilla">
+        <div class="campo"><label for="pe-nombres">Nombres</label><input id="pe-nombres"></div>
+        <div class="campo"><label for="pe-apellidos">Apellidos</label><input id="pe-apellidos"></div>
+        <div class="campo"><label for="pe-tipodoc">Tipo de documento</label><select id="pe-tipodoc"></select></div>
+        <div class="campo" id="pe-doc-campo"><label for="pe-doc">Número de documento</label><input id="pe-doc" inputmode="numeric"></div>
+        <div class="campo"><label for="pe-nac">Fecha de nacimiento</label><input id="pe-nac" type="date"><p class="campo__ayuda" id="pe-rango" aria-live="polite"></p></div>
+        <div class="campo"><label for="pe-vinculo">Vínculo con el inmueble</label><select id="pe-vinculo"></select></div>
+        <div class="campo"><label for="pe-poblacion">Tipo de población</label><select id="pe-poblacion"></select></div>
+        <fieldset class="grupo" id="pe-condiciones">
+          <legend>Condición especial</legend>
+        </fieldset>
+      </div>
+      <div class="dialogo__pie">
+        <button class="btn btn--fantasma" type="button" data-cerrar>Cancelar</button>
+        <button class="btn btn--primario" type="submit" id="pe-guardar">Agregar persona</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
