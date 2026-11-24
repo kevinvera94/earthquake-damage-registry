@@ -14,6 +14,7 @@
 | D-09 | Mockup ajustado al alcance v1.0 (PR #6) | ✅ |
 | D-10 | PR de documentación fusionado en `main` (PR #5) | ✅ |
 | D-11 | Estrategia de pruebas (`arch/TESTING.md`) y fase de configuración del despliegue (FASE-01) | ✅ |
+| D-12 | Reparto entre 3 personas, `arch/CODING-STANDARDS.md`, `CLAUDE.md` para sesiones en paralelo, plantilla de PR y `BITACORA.md` | ✅ |
 
 ## Criterio de cierre
-D-09 a D-11 completos y fusionados. Desde ese momento los specs en `main` son la referencia para FASE-01.
+D-09 a D-12 completos y fusionados. Desde ese momento los specs en `main` son la referencia para FASE-01.

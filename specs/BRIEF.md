@@ -87,6 +87,7 @@ Proyecto de la clase de **Análisis de Algoritmos**. El aplicativo debe reflejar
 
 ### 5.5 Equipo
 - **Grupo:** Python (6 integrantes)
+- **Desarrollo:** Kevin Vera, Valentina Sepúlveda y David Calambas, cada uno con su sesión de Claude Code (reparto en `TASKS.md` §2, reglas comunes en `CLAUDE.md` y `arch/CODING-STANDARDS.md`)
 
 ---
 
