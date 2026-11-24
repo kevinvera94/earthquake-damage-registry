@@ -45,6 +45,7 @@ flowchart LR
 | [`API.md`](arch/API.md) | Endpoints, parámetros de filtro, respuestas y códigos de error |
 | [`AUTH.md`](arch/AUTH.md) | Login, verificación del JWT, roles, creación y desactivación de usuarios |
 | [`INFRA.md`](arch/INFRA.md) | Despliegue, variables de entorno, CI/CD (YAML), operación en capa gratuita y runbook de despliegue y reversión |
+| [`CODING-STANDARDS.md`](arch/CODING-STANDARDS.md) | **Cómo** se escribe el código: capas, errores, nombres, estilos, archivos compartidos, Git. Obligatorio para personas y agentes |
 | [`TESTING.md`](arch/TESTING.md) | Estrategia de pruebas: unitarias, integración, humo y aceptación; cobertura mínima; matriz regla → prueba |
 | `ALGORITHMS.md` | Análisis de complejidad (BRIEF §13). Se redacta en la fase final (RF-06-03) |
 
@@ -62,6 +63,7 @@ earthquake-damage-registry/
       auth.py                     ← verificación del JWT y dependencias de rol
       models.py                   ← modelos SQLAlchemy
       enums.py                    ← catálogos (BRIEF §8)
+      errors.py                   ← excepciones de dominio → HTTP (CODING-STANDARDS §1.3)
       schemas/                    ← modelos Pydantic de entrada/salida
       routers/                    ← public, me, users, buildings, inspections, people
       services/                   ← reglas de negocio: filtros, duplicados, cifras, edades
@@ -77,7 +79,10 @@ earthquake-damage-registry/
   frontend/
     src/
       main.jsx · App.jsx          ← rutas
-      lib/supabase.js · lib/api.js
+      lib/supabase.js · lib/catalogs.js · lib/validation.js · lib/filters.js · lib/format.js
+      lib/api/                    ← client.js + un archivo por recurso (evita conflictos entre personas)
+      hooks/useAsync.js
+      styles/global.css           ← portado del mockup
       pages/                      ← Public, Login, Buildings, BuildingDetail, BuildingForm, Users
       components/                 ← StickerBadge, Filters, PeopleTable, DemoBanner…
       lib/*.test.js               ← pruebas unitarias con Vitest
@@ -86,4 +91,4 @@ earthquake-damage-registry/
 ```
 
 ## 6. Decisiones de arquitectura
-Registradas en `DECISIONS.md`: DEC-004 (acceso a datos), DEC-005 (sticker vigente desnormalizado), DEC-006 (autenticación), DEC-007 (PDF), DEC-008 (frontend en JavaScript).
+Registradas en `DECISIONS.md`: DEC-004 (acceso a datos), DEC-005 (sticker vigente desnormalizado), DEC-006 (autenticación), DEC-007 (PDF), DEC-008 (frontend en JavaScript), DEC-011 (equipo de 3 por módulo completo).

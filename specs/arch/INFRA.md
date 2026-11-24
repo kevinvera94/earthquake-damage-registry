@@ -6,10 +6,12 @@
 ## 1. Ambientes
 | Ambiente | Frontend | Backend | BD / Auth |
 |---|---|---|---|
-| **Local** | `npm run dev` (:5173) | `uvicorn app.main:app --reload` (:8000) | Proyecto Supabase de desarrollo *o* el de producción con un esquema limpio |
+| **Local** | `npm run dev` (:5173) | `uvicorn app.main:app --reload` (:8000) | PostgreSQL local en Docker (cada persona la suya) + proyecto Supabase **`edr-dev`** compartido, solo para Auth |
 | **Producción** | Vercel (rama `main`) | Render (rama `main`) | Proyecto Supabase de producción |
 
 > Con 7 días no se monta un ambiente de staging. Las ramas se validan con CI y los *preview deployments* de Vercel.
+
+> **Proyecto `edr-dev`:** lo crea David en T-04a. Cada persona crea ahí su propio usuario admin de prueba con `create_admin.py`. Nadie desarrolla contra el proyecto de producción. Si la capa gratuita no permite un segundo proyecto activo, se usa producción **solo para Auth** con usuarios de prueba y la BD local para los datos.
 
 ## 2. Variables de entorno
 
@@ -99,15 +101,15 @@ services:
 | Cuenta única en Vercel Hobby | Un integrante es dueño de las tres cuentas (BRIEF P-02) y comparte las variables por un canal privado |
 
 ## 7. Runbook de despliegue
-> Lo completa y ensaya el carril E en T-04e. Debe permitir que **otro** integrante despliegue y revierta sin ayuda.
+> Lo completa y ensaya David Calambas en T-04e. Debe permitir que **otro** integrante despliegue y revierta sin ayuda.
 
 ### 7.1 Dueños y accesos
 | Plataforma | Dueño de la cuenta | Quién más tiene acceso | Dónde están los secretos |
 |---|---|---|---|
-| GitHub (repo, *Actions*, *Secrets*) | *por asignar* | Todo el equipo (colaboradores) | GitHub → Settings → Secrets |
-| Supabase | *por asignar* | *por definir* | Gestor privado del equipo |
-| Render | *por asignar* | *por definir* | Render → Environment |
-| Vercel | *por asignar* | — (Hobby: una cuenta) | Vercel → Environment Variables |
+| GitHub (repo, *Actions*, *Secrets*) | Kevin Vera | Valentina Sepúlveda y David Calambas (colaboradores) | GitHub → Settings → Secrets |
+| Supabase (`edr-prod` y `edr-dev`) | David Calambas | Kevin Vera (miembro de la organización) | Gestor privado del equipo |
+| Render | David Calambas | *por definir* | Render → Environment |
+| Vercel | David Calambas | — (Hobby: una cuenta) | Vercel → Environment Variables |
 
 ### 7.2 Primer despliegue (una sola vez, T-04b)
 1. Supabase: crear proyecto → copiar la cadena del **session pooler**, `SUPABASE_URL` y `service_role` key

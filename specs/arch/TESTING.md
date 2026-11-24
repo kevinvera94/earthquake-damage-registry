@@ -53,7 +53,8 @@ backend/tests/
 | `db_session` (función) | Abre una transacción y hace **rollback** al terminar: cada prueba empieza con la BD vacía, sin truncar tablas |
 | `client` | `TestClient` de FastAPI con la dependencia de sesión sobrescrita por `db_session` |
 | `admin_token`, `inspector_token`, `inactive_token` | JWT firmados con una llave RSA generada en la prueba; `auth.py` usa la llave pública de prueba vía variable de entorno (INFRA §5) |
-| `make_building`, `make_person` | Fábricas con valores por defecto válidos para no repetir datos |
+| `as_user(role)` | Sobrescribe `get_current_user` con un perfil de prueba del rol indicado. Permite probar cualquier módulo sin depender de la implementación real de auth (T-05) |
+| `make_profile`, `make_building`, `make_inspection`, `make_person` | Fábricas con valores por defecto válidos para no repetir datos |
 | `fake_supabase_admin` | Sustituye el cliente de la Admin API (crear/banear usuario) con un doble en memoria |
 
 ### 2.3 Convenciones
