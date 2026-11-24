@@ -1,5 +1,5 @@
 ## Tarea
-T-XX — <nombre de la tarea> · Closes #<issue>
+T-XX — <nombre de la tarea>
 
 ## Qué cubre
 - RF / RN: <p. ej. RF-02-02, RN-01>
@@ -13,6 +13,7 @@ T-XX — <nombre de la tarea> · Closes #<issue>
 - [ ] No modifica archivos compartidos (CODING-STANDARDS §3), o lo avisé en el grupo: <cuál>
 - [ ] Sin dependencias nuevas, o justificadas aquí: <cuál y por qué>
 - [ ] Pruebas nuevas o actualizadas; lint y pruebas en verde en local
+- [ ] `specs/BITACORA.md`: tarea en `Finalizado` con fecha y número de PR, solo en mi sección
 - [ ] Sin secretos ni datos reales
 - [ ] `/code-review` ejecutado y hallazgos atendidos
 

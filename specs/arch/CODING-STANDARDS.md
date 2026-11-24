@@ -2,7 +2,7 @@
 > **Obligatorio** para las personas y los agentes (Claude Code u otros) que escriben código en este repositorio.
 > Objetivo: que el código de Kevin, Valentina y David parezca escrito por una sola persona.
 > Si un estándar parece incorrecto, **se propone el cambio en un PR a este archivo**; no se implementa una variante propia.
-> Versión: **v1.0** — Última actualización: 2026-11-24
+> Versión: **v1.0** — Última actualización: 2026-11-23
 
 ---
 
@@ -156,7 +156,8 @@ Los crea **completos** su tarea de FASE-01. Después solo se **agregan** líneas
 | `frontend/src/App.jsx`, `lib/api/client.js`, `lib/catalogs.js`, `hooks/useAsync.js`, `styles/global.css` | T-02 (Valentina) | Avisar en el grupo; PR propio |
 | `frontend/package.json`, `package-lock.json` | T-02 | Solo con justificación; si el *lockfile* entra en conflicto, se regenera con `npm install`, no se edita a mano |
 | `.github/workflows/*`, `render.yaml`, `vercel.json` | FASE-01 (David) | David |
-| `specs/**` | — | PR de documentación; el estado de tareas lo actualiza Kevin al cerrar cada fase |
+| `specs/BITACORA.md` | — | **Cada persona, solo su sección**, en el PR de cada tarea (al empezar y al terminar) |
+| `specs/**` (resto) | — | PR de documentación; el estado de `TASKS.md` y `FASE-XX.md` lo consolida Kevin al cerrar cada fase |
 
 ---
 
@@ -166,9 +167,9 @@ Los crea **completos** su tarea de FASE-01. Después solo se **agregan** líneas
 | Ramas | `feat/T-XX-descripcion-corta`, `fix/T-XX-…`, `docs/…`, `chore/…`, siempre desde `main` actualizado |
 | Commits | En español, formato `tipo(alcance): descripción` — tipos: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`. Ejemplo: `feat(buildings): crea edificación con control de duplicados` |
 | Antes del PR | `git pull --rebase origin main`; correr lint y pruebas en local |
-| PR | Usa la plantilla `.github/pull_request_template.md`; abre en **borrador** al empezar la tarea; cita los RF/RN que cubre y cierra su issue (`Closes #N`) |
+| PR | Usa la plantilla `.github/pull_request_template.md`; abre en **borrador** al empezar la tarea; cita los RF/RN que cubre; incluye la actualización de `specs/BITACORA.md` |
 | Tamaño | Un PR = una tarea. Si un módulo tiene parte de backend y de frontend (p. ej. T-07 + T-10), pueden ser dos PRs seguidos de la misma persona |
-| Revisión | Aprueba otra persona del equipo. El agente pasa `/code-review` antes de pedir revisión |
+| Revisión | **Aprueba Kevin Vera** (`.github/CODEOWNERS`). En los PRs de Kevin revisa Valentina o David, y Kevin fusiona como administrador (ver TASKS §4.3). El agente pasa `/code-review` antes de pedir revisión |
 | Fusión | *Squash and merge* no; **merge commit** (se conserva el historial de la tarea). Borrar la rama al fusionar |
 
 ---

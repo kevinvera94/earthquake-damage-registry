@@ -1,15 +1,15 @@
 # TASKS.md — Plan de tareas del proyecto
 > Índice de fases. El detalle de cada fase está en `specs/tasks/FASE-XX.md`.
 > Convención: una tarea = una sesión de agente = una rama = un PR (atómica, verificable, independiente).
-> Versión: **v1.2** — reparto entre 3 personas por módulo completo (DEC-011) · Última actualización: 2026-11-24
+> Versión: **v1.2** — reparto entre 3 personas por módulo completo y bitácora (DEC-011) · Última actualización: 2026-11-23
 
 ---
 
 ## Estado actual
-> El avance diario se lleva en **GitHub Issues / Project** (§4). Kevin consolida esta sección al cerrar cada fase.
+> El estado de cada tarea (fecha, persona y estado) está en **[`BITACORA.md`](BITACORA.md)**. Kevin consolida esta sección al cerrar cada fase.
 
 **Fase activa:** FASE-01 (configuración del despliegue y archivos compartidos)
-**Hoy (24-nov):** Kevin → T-01, T-03 · Valentina → T-02 · David → T-04a, T-01b, T-04b
+**Primer bloque:** Kevin → T-01, T-03 · Valentina → T-02 · David → T-04a, T-01b, T-04b
 
 ---
 
@@ -113,22 +113,25 @@ flowchart LR
 
 ## 4. Coordinación
 
-### 4.1 GitHub Issues y Project
-- **Un issue por tarea** (`T-XX — nombre`), asignado a su responsable y con la etiqueta de su fase
-- **Project** con columnas *Pendiente → En progreso → En revisión → Hecho*. Mover la tarjeta es la forma de reportar el avance; **no** se edita el estado en `TASKS.md` ni en `FASE-XX.md` (CLAUDE.md)
-- Una persona solo trabaja en issues asignados a sí misma
+### 4.1 Bitácora
+- **`specs/BITACORA.md` es el registro oficial** del estado: una fila por tarea con fecha, persona y estado (*Pendiente · En curso · Finalizado*)
+- Se actualiza **en el PR de la tarea**: `En curso` en el primer commit y `Finalizado` antes de pedir revisión. Sin la bitácora actualizada, el PR no se aprueba
+- Cada persona tiene **su propia sección** y solo edita esa: así los PRs de personas distintas no chocan en el archivo
+- **No** se edita el estado en `TASKS.md` ni en `FASE-XX.md` (CLAUDE.md); Kevin los consolida al cerrar cada fase
+- Una persona solo trabaja en tareas de su sección
 
 ### 4.2 Flujo de una tarea
 1. `git checkout main && git pull` → rama `feat/T-XX-…`
-2. Abrir el PR en **borrador** apenas haya un primer commit (los demás ven qué archivos tocas)
+2. Primer commit: fila de la tarea en `En curso` en `BITACORA.md`. Abrir el PR en **borrador** (los demás ven qué archivos tocas)
 3. Implementar con Claude siguiendo CLAUDE.md y CODING-STANDARDS
-4. `git pull --rebase origin main`, lint y pruebas en local, `/code-review`
-5. Marcar el PR como listo y pedir revisión a **otra** persona del equipo
+4. Fila de la tarea en `Finalizado` con fecha y PR; `git pull --rebase origin main`, lint y pruebas en local, `/code-review`
+5. Marcar el PR como listo y pedir revisión a **Kevin Vera**
 6. Fusionar (*merge commit*) y borrar la rama. El despliegue y el *smoke* son automáticos
 
 ### 4.3 Reglas
 - **Máximo 1 PR abierto por persona** (2 si uno está esperando revisión)
-- **Revisión en menos de 2 horas** en horario de trabajo: un PR esperando bloquea a otro
+- **Kevin Vera aprueba todos los PRs** (`.github/CODEOWNERS`, revisión de *code owners* obligatoria en `main`). GitHub no permite aprobar el PR propio: los PRs de Kevin los revisa Valentina o David, y Kevin los fusiona usando su permiso de administrador
+- **Revisión en menos de 2 horas** en horario de trabajo. Como todo pasa por Kevin, es el principal cuello de botella: Kevin revisa en bloques fijos (p. ej. al final de la mañana, de la tarde y de la noche) y avisa si no puede
 - **Archivos compartidos** (CODING-STANDARDS §3): solo se agregan líneas al final, en un PR pequeño y propio, avisando antes en el grupo
 - **Migraciones:** solo Kevin
 - **Dos sesiones en paralelo por persona, como máximo**, cada una en su propio *worktree* (`git worktree add ../edr-T-XX feat/T-XX-…`) y con tareas sin archivos en común

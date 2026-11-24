@@ -88,8 +88,8 @@
 - **Consecuencias:** Cada PR fusionado llega solo a producción y se verifica; nadie despliega a mano. Contra: la funcionalidad empieza medio día después
 
 ### DEC-011 — Equipo de 3 personas con Claude Code, reparto por módulo completo
-- **Fecha:** 2026-11-24
+- **Fecha:** 2026-11-23
 - **Estado:** Aceptada
 - **Contexto:** El desarrollo lo hacen Kevin Vera, Valentina Sepúlveda y David Calambas, cada uno con su propia sesión de Claude Code. El reparto en 6 carriles por capa obligaba a esperar entre backend y frontend en cada módulo, y tres agentes sin reglas comunes generarían código con patrones distintos
-- **Decisión:** El día 1 se reparte por capa para crear completos los archivos compartidos (FASE-01). Desde ahí, cada persona toma módulos completos (API + interfaz + pruebas). Los estándares de código quedan en `arch/CODING-STANDARDS.md`, que `CLAUDE.md` obliga a leer; el módulo de edificaciones es la implementación de referencia. El avance se lleva en GitHub Issues y no en `TASKS.md`, para evitar conflictos
-- **Consecuencias:** Menos esperas y menos conflictos de fusión; código uniforme entre sesiones. Contra: el día 1 es crítico (si los archivos compartidos llegan tarde, bloquean a todos) y las migraciones dependen de una sola persona
+- **Decisión:** El día 1 se reparte por capa para crear completos los archivos compartidos (FASE-01). Desde ahí, cada persona toma módulos completos (API + interfaz + pruebas). Los estándares de código quedan en `arch/CODING-STANDARDS.md`, que `CLAUDE.md` obliga a leer; el módulo de edificaciones es la implementación de referencia. El estado de cada tarea se registra en `specs/BITACORA.md` (fecha, persona y estado), con una sección por persona para evitar conflictos; `TASKS.md` lo consolida Kevin al cerrar cada fase. Kevin Vera aprueba todos los PRs
+- **Consecuencias:** Menos esperas y menos conflictos de fusión; código uniforme entre sesiones. Contra: el día 1 es crítico (si los archivos compartidos llegan tarde, bloquean a todos); las migraciones y las aprobaciones dependen de una sola persona (Kevin), que es el cuello de botella a vigilar

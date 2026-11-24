@@ -87,7 +87,8 @@
   - `.github/workflows/ci.yml`: jobs `backend` (Postgres 16, lint, migraciones, `pytest` con cobertura mínima) y `frontend` (`npm ci`, lint, `npm test`, build)
   - Render con *auto-deploy* solo cuando el *check* de CI pasa (opción "After CI checks pass"); Vercel despliega `main` a producción y cada PR a *preview*
   - Protección de `main`: PR obligatorio, CI en verde obligatorio, 1 aprobación, sin push directo
-  - **No** activar "Require review from Code Owners" mientras `.github/CODEOWNERS` tenga a una sola persona: bloquearía a los otros dos (DEC-011)
+  - Activar "Require review from Code Owners": Kevin Vera aprueba todos los PRs (`.github/CODEOWNERS`, DEC-011)
+  - **No** activar "Do not allow bypassing the above settings": Kevin necesita fusionar sus propios PRs como administrador, porque GitHub no permite aprobar el PR propio
 - **Hecho cuando:** un PR con una prueba que falla queda **bloqueado** para fusionar, y uno en verde, al fusionarse, aparece en producción sin pasos manuales
 
 ### T-04d — Verificación post-despliegue y mantener activo ⬜
