@@ -1,40 +1,49 @@
-# FASE-03 — Consulta, área pública y PDF
-> **27-nov-2026** · Objetivo: flujos F-3 (consulta y PDF) y F-4 (ciudadano) funcionando en producción.
+# FASE-03 — Registro: edificaciones, inspecciones y personas
+> **25 – 26-nov-2026** · Objetivo: un inspector registra en producción una visita completa (flujo F-1) y una reinspección (F-2).
+> Toda tarea de backend entrega pruebas unitarias de sus servicios **y** de integración de sus endpoints (TESTING §2.5).
 
 ---
 
-### T-14 — API de consulta con filtros ⬜
-- **Carril:** A · **Depende de:** T-08, T-09
-- **Specs:** RF-04-01, RF-04-02; API §3.2; DATA-MODEL §4.2, §4.3
-- **Hacer:** `GET /api/buildings` con todos los filtros, un único `EXISTS` para los filtros de personas, paginación, orden y `people_count`
-- **Pruebas:** combinación Y entre grupos; caso "arrendatario + adulto mayor" con dos personas distintas que cumplen cada una un filtro → **no** aparece; `sticker=none`; filtros de cobertura indiferente/sí/no; conteo total correcto con paginación
-- **Hecho cuando:** pruebas en verde y respuesta < 2 s con los datos ficticios (RNF-04; medir tras T-21)
+### T-07 — API de edificaciones ⬜
+- **Carril:** A · **Depende de:** T-03, T-05
+- **Specs:** RF-02-01 a RF-02-03; API §2, §3.3; RN-01, RN-08
+- **Hacer:** `POST /api/buildings`, `GET /api/buildings/lookup`, `GET /api/buildings/{id}` (ficha con inspecciones y personas), `PATCH /api/buildings/{id}`; `IntegrityError` → 409
+- **Pruebas:** integración `test_buildings.py`: código catastral duplicado → 409; `cadastral_code` no editable; `floors < 1` → 422; sin token → 401
+- **Hecho cuando:** pruebas en verde y endpoints visibles en `/docs`
 
-### T-15 — UI de consulta ⬜
-- **Carril:** D · **Depende de:** T-14
-- **Specs:** RF-04-01, RF-04-02; mockup ajustado (consulta)
-- **Hacer:** panel de filtros (controles de RF-04-01), tabla de resultados con paginación de 20 y conteo total, "Limpiar filtros", fila → ficha. Los filtros se reflejan en la URL (query string) para poder compartir y recargar
-- **Hecho cuando:** cada filtro cambia los resultados como en el PRD
-
-### T-16 — API de cifras públicas ⬜
-- **Carril:** B · **Depende de:** T-08
-- **Specs:** RF-05-01 a RF-05-03; API §3.1; RN-09
-- **Hacer:** `GET /api/public/stats` sin autenticación, con un esquema de respuesta cerrado
-- **Pruebas:** la suma por color = total; la respuesta no contiene claves ni valores de datos personales (nombres, documentos, direcciones, códigos catastrales sembrados en la prueba); funciona sin token
+### T-08 — API de inspecciones ⬜
+- **Carril:** A · **Depende de:** T-07
+- **Specs:** RF-02-04, RF-02-05; DATA-MODEL §4.1; RN-02 a RN-04
+- **Hacer:** `POST /api/buildings/{id}/inspections`; inspector = usuario del token; actualizar `current_sticker` y `last_inspection_at` en la misma transacción
+- **Pruebas:** unitarias `test_inspection_rules.py` (validación de fechas y si cambia el vigente); integración: fecha futura y anterior al 10-ago-2026 → 422; inspección con fecha anterior a la última **no** cambia el sticker vigente; historial ordenado descendente
 - **Hecho cuando:** pruebas en verde
 
-### T-17 — UI del área pública ⬜
-- **Carril:** D · **Depende de:** T-16, T-02
-- **Specs:** RF-05-01; mockup ajustado (inicio)
-- **Hacer:** página `/` con tarjetas por sticker, tabla por comuna, personas por rango etario, última actualización y botón "Iniciar sesión"
-- **Hecho cuando:** en producción, sin sesión, se ven las cifras
+### T-09 — API de personas ⬜
+- **Carril:** B · **Depende de:** T-07
+- **Specs:** RF-03-01 a RF-03-05; DATA-MODEL §3, §4.2; RN-05 a RN-07
+- **Hacer:** `POST /api/buildings/{id}/people`, `PATCH /api/people/{id}`, `DELETE /api/people/{id}`; `services/people.py` (normalización de nombre) y `services/ages.py` (edad, rango, intervalo de fechas por rango)
+- **Pruebas:** unitarias `test_ages.py` y `test_people_rules.py` (límites de edad, normalización con mayúsculas/tildes/espacios); integración: duplicado con documento y sin documento (con mayúsculas y tildes distintas) → 409; misma persona en otra edificación → OK; "Sin documento" con número → 422; edades límite 9, 10, 17, 18, 59 y 60
+- **Hecho cuando:** pruebas en verde
 
-### T-18 — Exportación a PDF ⬜
-- **Carril:** B · **Depende de:** T-09, T-11
-- **Specs:** RF-04-04; BRIEF §11.3; DEC-007
-- **Hacer:** `pdf.py` con ReportLab y `GET /api/buildings/{id}/pdf`; botón en la ficha que descarga con `fetch` + `Blob` (API §2, nota)
-- **Pruebas:** devuelve `application/pdf` con el nombre de RF-04-04 CA-3; sin token → 401; edificación sin inspecciones ni personas → PDF con "Sin registros"
-- **Hecho cuando:** en producción se descarga y abre el PDF de una edificación con historial y personas
+### T-10 — UI: buscar y crear/editar edificación ⬜
+- **Carril:** C · **Depende de:** T-06, T-07
+- **Specs:** RF-02-01 a RF-02-03; mockup ajustado (paso 1)
+- **Hacer:** búsqueda por código catastral → ficha o formulario de creación prellenado; formulario de edificación con cobertura (crear y editar); mensaje para 409
+- **Pruebas:** unitarias de `lib/validation.js` (pisos ≥ 1, obligatorios)
+- **Hecho cuando:** en producción se crea y edita una edificación; el duplicado muestra el error
+
+### T-11 — UI: ficha e inspección ⬜
+- **Carril:** C · **Depende de:** T-08, T-10
+- **Specs:** RF-02-04, RF-02-05, RF-04-03; mockup ajustado (ficha, paso 2)
+- **Hacer:** página de ficha (datos, cobertura, `StickerBadge` vigente, historial con observaciones); formulario de nueva inspección con fecha-hora por defecto "ahora"
+- **Hecho cuando:** registrar una reinspección cambia el sticker vigente y conserva la anterior en el historial
+
+### T-12 — UI: personas ⬜
+- **Carril:** D · **Depende de:** T-09, T-11 (la ficha)
+- **Specs:** RF-03-01 a RF-03-05; mockup ajustado (paso 3)
+- **Hacer:** tabla de personas en la ficha; formulario agregar/editar (número oculto si "Sin documento"; "Ninguna" excluyente); retirar con confirmación en pantalla
+- **Pruebas:** unitarias de `lib/validation.js` ("Sin documento" sin número; "Ninguna" excluyente; fecha no futura)
+- **Hecho cuando:** se agregan, editan y retiran personas; edad y rango se ven calculados; el duplicado muestra el error
 
 ## Criterio de cierre de la fase
-Todos los módulos MOD-01 a MOD-05 funcionando en producción.
+En producción, con un usuario Inspector creado por el admin: flujo F-1 completo y una reinspección F-2.
