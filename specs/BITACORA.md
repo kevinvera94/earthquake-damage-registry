@@ -32,7 +32,7 @@
 | D-11 | Estrategia de pruebas y fase de configuración del despliegue | Kevin Vera | Finalizado | 2026-11-23 | #7 |
 | D-12 | Reparto entre 3 personas, CODING-STANDARDS, CLAUDE.md, plantilla de PR y bitácora | Kevin Vera | Finalizado | 2026-11-23 | #8 |
 | T-01 | Esqueleto del backend y archivos compartidos | Kevin Vera | Finalizado | 2026-11-26 | #9 |
-| T-03 | Modelo de datos y migración inicial | Kevin Vera | Pendiente | — | — |
+| T-03 | Modelo de datos y migración inicial | Kevin Vera | Finalizado | 2026-11-26 | #11 |
 | T-05 | Autenticación en el backend | Kevin Vera | Pendiente | — | — |
 | T-06 | Login en el frontend | Kevin Vera | Pendiente | — | — |
 | T-13a | API de usuarios | Kevin Vera | Pendiente | — | — |
@@ -42,6 +42,12 @@
 | T-19 | Generador de datos ficticios | Kevin Vera | Pendiente | — | — |
 | T-20 | Documento de análisis algorítmico | Kevin Vera | Pendiente | — | — |
 | T-02 | Esqueleto del frontend y archivos compartidos (reasignada desde Valentina Sepúlveda) | Kevin Vera | Finalizado | 2026-11-26 | #10 |
+| T-04a | Cuentas, accesos y secretos (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-01b | Infraestructura de pruebas (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04b | Despliegue del backend y del frontend (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04d | Verificación post-despliegue y mantener activo (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04e | Runbook de despliegue y reversión (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 
 ## Valentina Sepúlveda
 
