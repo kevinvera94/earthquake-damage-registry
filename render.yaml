@@ -13,8 +13,8 @@ services:
     buildCommand: pip install -r requirements.txt && alembic upgrade head
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
-    # T-04c lo cambia a `checksPass` (desplegar solo con CI en verde)
-    autoDeployTrigger: commit
+    # Despliega solo cuando los checks de CI del commit en main pasan (INFRA §5.2)
+    autoDeployTrigger: checksPass
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
