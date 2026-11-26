@@ -84,9 +84,15 @@ services:
 - `SONAR_TOKEN` (GitHub → *Secrets*): análisis de calidad del código entrante con SonarCloud, configurado por el equipo. No es de producción y **no se borra**
 
 ### 5.2 Despliegue continuo
-- **Protección de `main`:** PR obligatorio, *checks* `backend` y `frontend` obligatorios, 1 aprobación, sin push directo
-- **Render:** *Auto-Deploy* = "After CI Checks Pass" sobre `main`
-- **Vercel:** `main` → producción; cada PR → *preview deployment* con su URL en el PR
+- **Protección de `main`** (*ruleset* "Regla para aprobacion de PRs", configurado en T-04c):
+  - PR obligatorio con 1 aprobación del *code owner* (`.github/CODEOWNERS`); una revisión se descarta si llegan commits nuevos
+  - *Checks* obligatorios `backend` y `frontend` (GitHub Actions)
+  - **Sin** "rama al día con `main`" (*strict*): con tres personas fusionando en paralelo obligaría a re-ejecutar CI tras cada fusión ajena. CI corre de nuevo en `main` después de cada fusión, y Render solo despliega si pasa
+  - Sin borrar `main` ni forzar push
+  - *Bypass* solo para el rol Admin y solo vía PR: lo necesita Kevin para fusionar sus propios PRs (TASKS §4.3). **Se usa para saltar la aprobación, nunca con CI en rojo**
+  - Verificado con un PR desechable con una prueba rota (#17): quedó bloqueado y se cerró sin fusionar
+- **Render:** `autoDeployTrigger: checksPass` en `render.yaml` ("After CI Checks Pass") sobre `main`
+- **Vercel:** `main` → producción; cada PR → *preview deployment* con su URL en el PR. *Deployment Protection* desactivada para que el equipo abra los *previews* (solo datos ficticios)
 - **Resultado:** si CI falla no se fusiona, y si no se fusiona no se despliega (CLAUDE.md: no desplegar sin tests)
 
 ### 5.3 `smoke.yml` — verificación post-despliegue (T-04d)
