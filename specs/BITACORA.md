@@ -48,6 +48,7 @@
 | T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #16 |
 | T-04d | Verificación post-despliegue y mantener activo (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 | T-04e | Runbook de despliegue y reversión (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| X-KV-1 | Guía de ambiente local (`LOCAL-SETUP.md`) y `.gitattributes` con finales LF | Kevin Vera | En curso | 2026-11-26 | — |
 
 ## Valentina Sepúlveda
 

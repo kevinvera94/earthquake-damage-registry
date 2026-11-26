@@ -47,6 +47,7 @@ flowchart LR
 | [`INFRA.md`](arch/INFRA.md) | Despliegue, variables de entorno, CI/CD (YAML), operación en capa gratuita y runbook de despliegue y reversión |
 | [`CODING-STANDARDS.md`](arch/CODING-STANDARDS.md) | **Cómo** se escribe el código: capas, errores, nombres, estilos, archivos compartidos, Git. Obligatorio para personas y agentes |
 | [`TESTING.md`](arch/TESTING.md) | Estrategia de pruebas: unitarias, integración, humo y aceptación; cobertura mínima; matriz regla → prueba |
+| [`LOCAL-SETUP.md`](arch/LOCAL-SETUP.md) | Requisitos e instalación del ambiente de desarrollo local (backend, frontend, BD en Docker) |
 | `ALGORITHMS.md` | Análisis de complejidad (BRIEF §13). Se redacta en la fase final (RF-06-03) |
 
 ## 5. Estructura de carpetas definitiva

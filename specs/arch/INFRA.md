@@ -9,6 +9,8 @@
 | **Local** | `npm run dev` (:5173) | `uvicorn app.main:app --reload` (:8000) | PostgreSQL local en Docker (cada persona la suya) + proyecto Supabase **`edr-dev`** compartido, solo para Auth |
 | **Producción** | Vercel (rama `main`) | Render (rama `main`) | Proyecto Supabase de producción |
 
+> Instalación y configuración del ambiente local paso a paso: [`LOCAL-SETUP.md`](LOCAL-SETUP.md).
+
 > Con 7 días no se monta un ambiente de staging. Las ramas se validan con CI y los *preview deployments* de Vercel.
 
 > **Proyecto `edr-dev`:** lo crea David en T-04a. Cada persona crea ahí su propio usuario admin de prueba con `create_admin.py`. Nadie desarrolla contra el proyecto de producción. Si la capa gratuita no permite un segundo proyecto activo, se usa producción **solo para Auth** con usuarios de prueba y la BD local para los datos.
