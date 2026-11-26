@@ -19,18 +19,21 @@ Proyecto de la clase de **Análisis de Algoritmos**, desarrollado con metodolog�
 
 ## Estado del proyecto
 
-🟡 **Fase de documentación SDD.** Aún no hay código.
+🟢 **En construcción.** Esqueletos de backend y frontend desplegados en producción. El estado de cada tarea está en [`specs/BITACORA.md`](specs/BITACORA.md).
 
 - **Fecha de entrega:** 30 de noviembre de 2026, desplegado en un ambiente de producción con capa gratuita
-- **Backend:** debe desarrollarse en **Python** (exigencia del curso)
+- **Stack:** FastAPI (Python) + PostgreSQL y Auth en Supabase + React (Vite) — ver [`specs/ARCHITECTURE.md`](specs/ARCHITECTURE.md)
 
-| Documento | Estado |
+### Producción
+
+| Pieza | URL |
 |---|---|
-| `specs/BRIEF.md` | v0.5 — en validación (incorpora el formato RUFE de la UNGRD) |
-| `specs/DECISIONS.md` | Iniciado |
-| `specs/PRD.md`, `specs/ARCHITECTURE.md`, `specs/DESIGN.md`, `specs/TASKS.md` | Esqueletos pendientes |
+| Frontend (Vercel) | https://earthquake-damage-registry.vercel.app |
+| Backend (Render) | https://edr-backend-4uc1.onrender.com |
+| Documentación de la API | https://edr-backend-4uc1.onrender.com/docs |
+| Estado del backend | https://edr-backend-4uc1.onrender.com/api/health |
 
-> El stack tecnológico es tentativo (Python en el backend). Las secciones de requisitos, setup local, pruebas y despliegue se agregarán cuando se decida (ver [`specs/DECISIONS.md`](specs/DECISIONS.md)).
+> El backend usa la capa gratuita de Render: se duerme tras 15 minutos sin tráfico y la primera petición puede tardar cerca de 1 minuto. Despliegue, variables y reversión: [`specs/arch/INFRA.md`](specs/arch/INFRA.md).
 
 ---
 
