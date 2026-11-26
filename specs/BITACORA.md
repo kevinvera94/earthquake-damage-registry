@@ -45,7 +45,7 @@
 | T-04a | Cuentas, accesos y secretos (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #12 |
 | T-01b | Infraestructura de pruebas (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #13 |
 | T-04b | Despliegue del backend y del frontend (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #14, #15 |
-| T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | En curso | 2026-11-26 | — |
 | T-04d | Verificación post-despliegue y mantener activo (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 | T-04e | Runbook de despliegue y reversión (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 
