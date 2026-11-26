@@ -1,0 +1,13 @@
+# Finales de línea LF en todos los sistemas (Prettier y Black los exigen).
+# Sin esto, Git en Windows convierte a CRLF al clonar y `npm run format:check` falla.
+* text=auto eol=lf
+
+# Binarios: sin conversión
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

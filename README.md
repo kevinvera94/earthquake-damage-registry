@@ -35,6 +35,8 @@ Proyecto de la clase de **Análisis de Algoritmos**, desarrollado con metodolog�
 
 > El backend usa la capa gratuita de Render: se duerme tras 15 minutos sin tráfico y la primera petición puede tardar cerca de 1 minuto. Despliegue, variables y reversión: [`specs/arch/INFRA.md`](specs/arch/INFRA.md).
 
+> **¿Vas a empezar a desarrollar?** Instala y configura tu ambiente local con [`specs/arch/LOCAL-SETUP.md`](specs/arch/LOCAL-SETUP.md).
+
 ---
 
 ## Metodología SDD
