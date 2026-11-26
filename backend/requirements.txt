@@ -1,0 +1,9 @@
+# Dependencias de ejecución del backend (versiones fijadas). Stack: ARCHITECTURE §1
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+SQLAlchemy==2.1.9
+psycopg[binary]==3.3.9
+pydantic-settings==2.16.3
+alembic==1.20.1
+PyJWT[crypto]==2.15.1
+reportlab==5.1.2

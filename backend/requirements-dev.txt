@@ -1,0 +1,4 @@
+# Herramientas de desarrollo y CI. T-01b agrega aquí las de pruebas (pytest, pytest-cov, httpx)
+-r requirements.txt
+black==26.10.1
+flake8==7.5.0

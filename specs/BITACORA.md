@@ -31,7 +31,7 @@
 | D-10 | PR de documentación v1.0 fusionado en `main` | Kevin Vera | Finalizado | 2026-11-23 | #5 |
 | D-11 | Estrategia de pruebas y fase de configuración del despliegue | Kevin Vera | Finalizado | 2026-11-23 | #7 |
 | D-12 | Reparto entre 3 personas, CODING-STANDARDS, CLAUDE.md, plantilla de PR y bitácora | Kevin Vera | Finalizado | 2026-11-23 | #8 |
-| T-01 | Esqueleto del backend y archivos compartidos | Kevin Vera | Pendiente | — | — |
+| T-01 | Esqueleto del backend y archivos compartidos | Kevin Vera | Finalizado | 2026-11-26 | #9 |
 | T-03 | Modelo de datos y migración inicial | Kevin Vera | Pendiente | — | — |
 | T-05 | Autenticación en el backend | Kevin Vera | Pendiente | — | — |
 | T-06 | Login en el frontend | Kevin Vera | Pendiente | — | — |
