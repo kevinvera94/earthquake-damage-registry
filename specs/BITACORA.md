@@ -42,7 +42,7 @@
 | T-19 | Generador de datos ficticios | Kevin Vera | Pendiente | — | — |
 | T-20 | Documento de análisis algorítmico | Kevin Vera | Pendiente | — | — |
 | T-02 | Esqueleto del frontend y archivos compartidos (reasignada desde Valentina Sepúlveda) | Kevin Vera | Finalizado | 2026-11-26 | #10 |
-| T-04a | Cuentas, accesos y secretos (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04a | Cuentas, accesos y secretos (reasignada desde David Calambas) | Kevin Vera | En curso | 2026-11-26 | — |
 | T-01b | Infraestructura de pruebas (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 | T-04b | Despliegue del backend y del frontend (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 | T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
