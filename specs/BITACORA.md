@@ -41,7 +41,7 @@
 | T-17 | UI del área pública | Kevin Vera | Pendiente | — | — |
 | T-19 | Generador de datos ficticios | Kevin Vera | Pendiente | — | — |
 | T-20 | Documento de análisis algorítmico | Kevin Vera | Pendiente | — | — |
-| T-02 | Esqueleto del frontend y archivos compartidos (reasignada desde Valentina Sepúlveda) | Kevin Vera | En curso | 2026-11-26 | — |
+| T-02 | Esqueleto del frontend y archivos compartidos (reasignada desde Valentina Sepúlveda) | Kevin Vera | Finalizado | 2026-11-26 | #10 |
 
 ## Valentina Sepúlveda
 
