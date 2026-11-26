@@ -81,6 +81,7 @@ services:
 - Variables de CI: `TEST_DATABASE_URL` apunta al servicio Postgres del job; **nunca** a Supabase (TESTING §4)
 - Las pruebas de auth generan sus propios JWT con una llave ECC P-256 de prueba (ES256, como producción); no llaman a Supabase
 - CI no necesita secretos de producción
+- `SONAR_TOKEN` (GitHub → *Secrets*): análisis de calidad del código entrante con SonarCloud, configurado por el equipo. No es de producción y **no se borra**
 
 ### 5.2 Despliegue continuo
 - **Protección de `main`:** PR obligatorio, *checks* `backend` y `frontend` obligatorios, 1 aprobación, sin push directo
@@ -104,12 +105,26 @@ services:
 > Lo completa y ensaya David Calambas en T-04e. Debe permitir que **otro** integrante despliegue y revierta sin ayuda.
 
 ### 7.1 Dueños y accesos
+> T-04a (2026-11-26): las cuentas quedaron a nombre de **Kevin Vera** (T-04a se reasignó desde David Calambas; ver BITACORA).
+
 | Plataforma | Dueño de la cuenta | Quién más tiene acceso | Dónde están los secretos |
 |---|---|---|---|
-| GitHub (repo, *Actions*, *Secrets*) | Kevin Vera | Valentina Sepúlveda y David Calambas (colaboradores) | GitHub → Settings → Secrets |
-| Supabase (`edr-prod` y `edr-dev`) | David Calambas | Kevin Vera (miembro de la organización) | Gestor privado del equipo |
-| Render | David Calambas | *por definir* | Render → Environment |
-| Vercel | David Calambas | — (Hobby: una cuenta) | Vercel → Environment Variables |
+| GitHub (repo, *Actions*, *Secrets*) | Kevin Vera | Colaboradores del grupo con rol *Write* | GitHub → Settings → Secrets |
+| Supabase (`edr-prod` y `edr-dev`) | Kevin Vera (organización personal) | David Calambas (miembro de la organización) | Copia privada de Kevin Vera, fuera del repositorio |
+| Render | Kevin Vera (cuenta personal) | — | Render → Environment Groups → `edr-backend-prod` |
+| Vercel | Kevin Vera (Hobby, *scope* `kevinvera94s-projects`) | — (Hobby: una cuenta) | Vercel → proyecto → Settings → Environment Variables |
+
+**Recursos creados** (identificadores públicos, no son secretos):
+
+| Recurso | Valor |
+|---|---|
+| Supabase producción | `edr-prod` · ref `gkzmvfpeqtdgcnkdhnvr` · `us-east-1` · JWT firmado con **ECC (P-256)** |
+| Supabase desarrollo | `edr-dev` · ref `dsdtcsynvrfhxderyjbv` · `us-east-1` · solo Auth (sin migraciones; los datos van en PostgreSQL local) |
+| Render | Environment Group `edr-backend-prod`: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FRONTEND_ORIGIN`. El servicio se crea en T-04b con `fromGroup` |
+| Vercel | Proyecto `earthquake-damage-registry` · *root* `frontend/` · `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en Production y Preview · URL de producción `https://earthquake-damage-registry.vercel.app` |
+| Pendiente de T-04b | `VITE_API_URL` (Vercel) y `PROD_API_URL` (GitHub *Secrets*): dependen de la URL de Render |
+
+**Puesta en marcha de un proyecto Supabase:** si se crea con "automatic RLS", Supabase instala `public.rls_auto_enable()` ejecutable por `anon` y `authenticated` (aviso WARN del Security Advisor). Se corrige en el SQL Editor con `revoke execute on function public.rls_auto_enable() from public, anon, authenticated;`. Aplicado en `edr-prod` y `edr-dev`.
 
 ### 7.2 Primer despliegue (una sola vez, T-04b)
 1. Supabase: crear proyecto → copiar la cadena del **session pooler**, `SUPABASE_URL` y `service_role` key
