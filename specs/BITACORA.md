@@ -46,15 +46,13 @@
 | T-01b | Infraestructura de pruebas (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #13 |
 | T-04b | Despliegue del backend y del frontend (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #14, #15 |
 | T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Finalizado | 2026-11-26 | #16 |
-| T-04d | Verificación post-despliegue y mantener activo (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
-| T-04e | Runbook de despliegue y reversión (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 | X-KV-1 | Guía de ambiente local (`LOCAL-SETUP.md`) y `.gitattributes` con finales LF | Kevin Vera | Finalizado | 2026-11-26 | #18 |
 
 ## Valentina Sepúlveda
 
 | ID | Tarea | Persona | Estado | Fecha | PR |
 |---|---|---|---|---|---|
-| T-02 | Esqueleto del frontend y archivos compartidos | Valentina Sepúlveda | Pendiente | — | — |
+| T-02 | Esqueleto del frontend y archivos compartidos (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #10 |
 | T-07 | API de edificaciones *(referencia)* | Valentina Sepúlveda | Pendiente | — | — |
 | T-10 | UI: buscar y crear/editar edificación *(referencia)* | Valentina Sepúlveda | Pendiente | — | — |
 | T-08 | API de inspecciones | Valentina Sepúlveda | Pendiente | — | — |
@@ -67,10 +65,10 @@
 | ID | Tarea | Persona | Estado | Fecha | PR |
 |---|---|---|---|---|---|
 | D-04 | Mockup navegable de la interfaz (v0.5) | David Calambas | Finalizado | 2026-11-17 | #4 (reemplazado por #6) |
-| T-04a | Cuentas, accesos y secretos | David Calambas | Pendiente | — | — |
-| T-01b | Infraestructura de pruebas | David Calambas | Pendiente | — | — |
-| T-04b | Despliegue del backend y del frontend | David Calambas | Pendiente | — | — |
-| T-04c | Pipeline CI/CD y protección de `main` | David Calambas | Pendiente | — | — |
+| T-04a | Cuentas, accesos y secretos (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #12 |
+| T-01b | Infraestructura de pruebas (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #13 |
+| T-04b | Despliegue del backend y del frontend (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #14, #15 |
+| T-04c | Pipeline CI/CD y protección de `main` (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #16 |
 | T-04d | Verificación post-despliegue y mantener activo | David Calambas | Pendiente | — | — |
 | T-04e | Runbook de despliegue y reversión | David Calambas | Pendiente | — | — |
 | T-09 | API de personas | David Calambas | Pendiente | — | — |
