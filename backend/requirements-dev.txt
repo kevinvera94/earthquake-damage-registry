@@ -1,4 +1,8 @@
-# Herramientas de desarrollo y CI. T-01b agrega aquí las de pruebas (pytest, pytest-cov, httpx)
+# Herramientas de desarrollo y CI
 -r requirements.txt
 black==26.10.1
 flake8==7.5.0
+# Pruebas (TESTING §2). httpx lo usa el TestClient de FastAPI/Starlette
+pytest==9.2.0
+pytest-cov==7.1.0
+httpx==0.29.0

@@ -79,7 +79,7 @@ services:
 | `frontend` | `npm ci` → `npm run lint` → `npm test` (Vitest) → `npm run build` |
 
 - Variables de CI: `TEST_DATABASE_URL` apunta al servicio Postgres del job; **nunca** a Supabase (TESTING §4)
-- Las pruebas de auth generan sus propios JWT con una llave RSA de prueba; no llaman a Supabase
+- Las pruebas de auth generan sus propios JWT con una llave ECC P-256 de prueba (ES256, como producción); no llaman a Supabase
 - CI no necesita secretos de producción
 - `SONAR_TOKEN` (GitHub → *Secrets*): análisis de calidad del código entrante con SonarCloud, configurado por el equipo. No es de producción y **no se borra**
 

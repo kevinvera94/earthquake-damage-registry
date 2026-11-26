@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",
@@ -26,6 +27,7 @@
     "eslint-plugin-react-refresh": "^0.5.8",
     "globals": "^17.14.0",
     "prettier": "^3.10.1",
-    "vite": "^8.4.0"
+    "vite": "^8.4.0",
+    "vitest": "^5.1.2"
   }
 }
