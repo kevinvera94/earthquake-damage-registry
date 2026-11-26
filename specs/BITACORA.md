@@ -41,6 +41,12 @@
 | T-17 | UI del área pública | Kevin Vera | Pendiente | — | — |
 | T-19 | Generador de datos ficticios | Kevin Vera | Pendiente | — | — |
 | T-20 | Documento de análisis algorítmico | Kevin Vera | Pendiente | — | — |
+| T-04a | Cuentas, accesos y secretos (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-01b | Infraestructura de pruebas (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04b | Despliegue del backend y del frontend (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04c | Pipeline CI/CD y protección de `main` (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04d | Verificación post-despliegue y mantener activo (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
+| T-04e | Runbook de despliegue y reversión (reasignada desde David Calambas) | Kevin Vera | Pendiente | — | — |
 
 ## Valentina Sepúlveda
 
