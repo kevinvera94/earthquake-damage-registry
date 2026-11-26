@@ -120,9 +120,9 @@ services:
 |---|---|
 | Supabase producción | `edr-prod` · ref `gkzmvfpeqtdgcnkdhnvr` · `us-east-1` · JWT firmado con **ECC (P-256)** |
 | Supabase desarrollo | `edr-dev` · ref `dsdtcsynvrfhxderyjbv` · `us-east-1` · solo Auth (sin migraciones; los datos van en PostgreSQL local) |
-| Render | Environment Group `edr-backend-prod`: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FRONTEND_ORIGIN`. El servicio se crea en T-04b con `fromGroup` |
-| Vercel | Proyecto `earthquake-damage-registry` · *root* `frontend/` · `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en Production y Preview · URL de producción `https://earthquake-damage-registry.vercel.app` |
-| Pendiente de T-04b | `VITE_API_URL` (Vercel) y `PROD_API_URL` (GitHub *Secrets*): dependen de la URL de Render |
+| Render | Blueprint `edr` → web service `edr-backend` (Free, `virginia`) · URL `https://edr-backend-4uc1.onrender.com` · variables desde el Environment Group `edr-backend-prod` (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FRONTEND_ORIGIN`), vinculado por `fromGroup` en `render.yaml` |
+| Vercel | Proyecto `earthquake-damage-registry` · *root* `frontend/` · `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en Production y Preview · `VITE_API_URL` en Production y Preview · URL de producción `https://earthquake-damage-registry.vercel.app` |
+| GitHub *Secrets* | `PROD_FRONTEND_URL` y `PROD_API_URL` (para `smoke.yml`, T-04d) · `SONAR_TOKEN` (§5.1) |
 
 **Puesta en marcha de un proyecto Supabase:** si se crea con "automatic RLS", Supabase instala `public.rls_auto_enable()` ejecutable por `anon` y `authenticated` (aviso WARN del Security Advisor). Se corrige en el SQL Editor con `revoke execute on function public.rls_auto_enable() from public, anon, authenticated;`. Aplicado en `edr-prod` y `edr-dev`.
 
