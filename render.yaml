@@ -1,0 +1,21 @@
+# Blueprint del backend en Render (INFRA §3). Se aplica desde el dashboard: New → Blueprint.
+# Las variables secretas no se escriben aquí: vienen del Environment Group `edr-backend-prod`
+# (INFRA §7.1), creado a mano en T-04a.
+services:
+  - type: web
+    name: edr-backend
+    runtime: python
+    plan: free
+    # Misma región que Supabase (us-east-1) para reducir la latencia a la BD
+    region: virginia
+    rootDir: backend
+    # El plan free no tiene preDeployCommand: la migración corre en el build (INFRA §3)
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    # T-04c lo cambia a `checksPass` (desplegar solo con CI en verde)
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - fromGroup: edr-backend-prod
