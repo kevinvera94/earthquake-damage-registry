@@ -1,0 +1,86 @@
+# Smoke post-despliegue (INFRA §5.3, TESTING §1): verifica que producción responde.
+# También mantiene activo Supabase: /api/health ejecuta `SELECT 1` y el `schedule`
+# lo llama cada 2 días, antes de los 7 días sin uso que pausan el proyecto (INFRA §6).
+name: Smoke
+
+on:
+  # Vercel y Render publican el resultado de cada despliegue como `deployment_status`
+  deployment_status:
+  workflow_dispatch:
+  schedule:
+    # 12:00 UTC (07:00 Colombia) en los días impares del mes
+    - cron: "0 12 */2 * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    # En `deployment_status` solo cuenta un despliegue exitoso de producción:
+    # los *previews* de Vercel usan el entorno "Preview" y no se verifican aquí
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment != 'Preview')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API_URL: ${{ secrets.PROD_API_URL }}
+      FRONTEND_URL: ${{ secrets.PROD_FRONTEND_URL }}
+      # Cambiar a "true" cuando T-16 publique GET /api/public/stats. Mientras sea "false",
+      # un 404 en ese endpoint solo genera un aviso; cualquier otro error sí falla
+      STATS_REQUIRED: "false"
+      # Reintentos: 12 × 10 s ≈ 2 min, lo que tarda Render en despertar (INFRA §6)
+      ATTEMPTS: "12"
+      WAIT_SECONDS: "10"
+    steps:
+      - name: Validar configuración
+        run: |
+          if [ -z "$API_URL" ] || [ -z "$FRONTEND_URL" ]; then
+            echo "::error::Faltan los secrets PROD_API_URL o PROD_FRONTEND_URL"
+            exit 1
+          fi
+
+      - name: Backend — GET /api/health
+        run: |
+          url="${API_URL%/}/api/health"
+          for i in $(seq 1 "$ATTEMPTS"); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep "$WAIT_SECONDS"
+          done
+          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          exit 1
+
+      - name: Área pública — GET /api/public/stats sin token
+        run: |
+          url="${API_URL%/}/api/public/stats"
+          for i in $(seq 1 "$ATTEMPTS"); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            if [ "$code" = "404" ] && [ "$STATS_REQUIRED" != "true" ]; then
+              echo "::warning::$url responde 404: el endpoint aún no existe (T-16)"
+              exit 0
+            fi
+            sleep "$WAIT_SECONDS"
+          done
+          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          exit 1
+
+      - name: Frontend — GET /
+        run: |
+          url="${FRONTEND_URL%/}/"
+          for i in $(seq 1 "$ATTEMPTS"); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep "$WAIT_SECONDS"
+          done
+          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          exit 1
