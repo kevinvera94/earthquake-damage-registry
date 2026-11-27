@@ -1,0 +1,115 @@
+# Smoke post-despliegue (INFRA §5.3, TESTING §1): verifica que producción responde.
+# También mantiene activo Supabase: /api/health ejecuta `SELECT 1` y el `schedule`
+# lo llama cada 2 días, antes de los 7 días sin uso que pausan el proyecto (INFRA §6).
+name: Smoke
+
+on:
+  # Render publica cada despliegue del backend como `deployment_status` (entorno
+  # "main - edr-backend"); por `rootDir: backend` solo despliega si cambia `backend/`
+  deployment_status:
+  # Vercel no publica `deployment_status` en este repositorio: tras cada fusión en `main`
+  # se verifica cuando termina CI. Que CI termine no garantiza que Vercel ya terminó de
+  # desplegar, pero en la práctica sí (≈ 5–10 s frente a ≈ 40 s de CI, INFRA §7.3); el
+  # backend lo verifica `deployment_status` cuando Render termina
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # 12:00 UTC (07:00 Colombia) en los días impares del mes
+    - cron: "0 12 */2 * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    # Solo cuenta un despliegue exitoso de producción (los *previews* empiezan por
+    # "Preview") y un CI en verde sobre `main` (si CI falla, Render no despliega)
+    if: >-
+      (github.event_name != 'deployment_status' ||
+       (github.event.deployment_status.state == 'success' &&
+        !startsWith(github.event.deployment.environment, 'Preview'))) &&
+      (github.event_name != 'workflow_run' ||
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API_URL: ${{ secrets.PROD_API_URL }}
+      FRONTEND_URL: ${{ secrets.PROD_FRONTEND_URL }}
+      # Cambiar a "true" cuando T-16 publique GET /api/public/stats. Mientras sea "false",
+      # un 404 en ese endpoint solo genera un aviso; cualquier otro error sí falla
+      STATS_REQUIRED: "false"
+      # Cada chequeo reintenta durante BUDGET_SECONDS como máximo (≈ 2 min, lo que tarda
+      # Render en despertar, INFRA §6). Con el tope por petición, el peor caso de un chequeo
+      # es BUDGET + REQUEST_TIMEOUT ≈ 2,3 min, y los tres caben en `timeout-minutes`
+      BUDGET_SECONDS: "120"
+      REQUEST_TIMEOUT: "20"
+      WAIT_SECONDS: "10"
+    steps:
+      - name: Validar configuración
+        run: |
+          if [ -z "$API_URL" ] || [ -z "$FRONTEND_URL" ]; then
+            echo "::error::Faltan los secrets PROD_API_URL o PROD_FRONTEND_URL"
+            exit 1
+          fi
+
+      - name: Backend — GET /api/health
+        run: |
+          url="${API_URL%/}/api/health"
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
+          done
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
+          exit 1
+
+      - name: Área pública — GET /api/public/stats sin token
+        run: |
+          url="${API_URL%/}/api/public/stats"
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            if [ "$code" = "404" ] && [ "$STATS_REQUIRED" != "true" ]; then
+              echo "::warning::$url responde 404: se tolera porque STATS_REQUIRED=false (T-16 pendiente). Al publicar T-16, cambiarlo a \"true\""
+              exit 0
+            fi
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
+          done
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
+          exit 1
+
+      - name: Frontend — GET /
+        run: |
+          url="${FRONTEND_URL%/}/"
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
+            echo "Intento $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
+          done
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
+          exit 1
