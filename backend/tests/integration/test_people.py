@@ -463,3 +463,31 @@ def test_delete_person_unknown_returns_404(client: TestClient, inspector: Profil
     response = client.delete(f"/api/people/{uuid.uuid4()}")
 
     assert response.status_code == 404
+
+
+def test_create_person_building_deleted_meanwhile_returns_404(
+    client: TestClient,
+    inspector: Profile,
+    make_building: Callable[..., Building],
+    db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Si la edificación desaparece entre la comprobación y la inserción, la FK responde 404,
+    no 500."""
+    from app.services import people as people_service
+
+    building = make_building()
+    real_get = db_session.get
+
+    def _get_and_delete(entity: Any, ident: Any) -> Any:
+        found = real_get(entity, ident)
+        if entity is Building:
+            db_session.delete(found)
+            db_session.flush()
+        return found
+
+    monkeypatch.setattr(people_service.Session, "get", lambda self, e, i: _get_and_delete(e, i))
+
+    response = client.post(f"/api/buildings/{building.id}/people", json=_payload())
+
+    assert response.status_code == 404

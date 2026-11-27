@@ -65,6 +65,9 @@ def _unit_of_work(db: Session) -> Iterator[None]:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint in _DUPLICATE_MESSAGES:
             raise ConflictError(_DUPLICATE_MESSAGES[constraint]) from exc
+        # 23503 = foreign_key_violation: la edificación se borró mientras tanto
+        if getattr(exc.orig, "sqlstate", None) == "23503":
+            raise NotFoundError("La edificación no existe.") from exc
         raise
     db.commit()
 
