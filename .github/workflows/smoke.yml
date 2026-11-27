@@ -8,7 +8,9 @@ on:
   # "main - edr-backend"); por `rootDir: backend` solo despliega si cambia `backend/`
   deployment_status:
   # Vercel no publica `deployment_status` en este repositorio: tras cada fusión en `main`
-  # se verifica cuando termina CI, momento en que Vercel ya desplegó el frontend
+  # se verifica cuando termina CI. Que CI termine no garantiza que Vercel ya terminó de
+  # desplegar, pero en la práctica sí (≈ 5–10 s frente a ≈ 40 s de CI, INFRA §7.3); el
+  # backend lo verifica `deployment_status` cuando Render termina
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -43,8 +45,11 @@ jobs:
       # Cambiar a "true" cuando T-16 publique GET /api/public/stats. Mientras sea "false",
       # un 404 en ese endpoint solo genera un aviso; cualquier otro error sí falla
       STATS_REQUIRED: "false"
-      # Reintentos: 12 × 10 s ≈ 2 min, lo que tarda Render en despertar (INFRA §6)
-      ATTEMPTS: "12"
+      # Cada chequeo reintenta durante BUDGET_SECONDS como máximo (≈ 2 min, lo que tarda
+      # Render en despertar, INFRA §6). Con el tope por petición, el peor caso de un chequeo
+      # es BUDGET + REQUEST_TIMEOUT ≈ 2,3 min, y los tres caben en `timeout-minutes`
+      BUDGET_SECONDS: "120"
+      REQUEST_TIMEOUT: "20"
       WAIT_SECONDS: "10"
     steps:
       - name: Validar configuración
@@ -57,39 +62,54 @@ jobs:
       - name: Backend — GET /api/health
         run: |
           url="${API_URL%/}/api/health"
-          for i in $(seq 1 "$ATTEMPTS"); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
             echo "Intento $i: $code"
             if [ "$code" = "200" ]; then exit 0; fi
-            sleep "$WAIT_SECONDS"
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
           done
-          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
           exit 1
 
       - name: Área pública — GET /api/public/stats sin token
         run: |
           url="${API_URL%/}/api/public/stats"
-          for i in $(seq 1 "$ATTEMPTS"); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
             echo "Intento $i: $code"
             if [ "$code" = "200" ]; then exit 0; fi
             if [ "$code" = "404" ] && [ "$STATS_REQUIRED" != "true" ]; then
               echo "::warning::$url responde 404: se tolera porque STATS_REQUIRED=false (T-16 pendiente). Al publicar T-16, cambiarlo a \"true\""
               exit 0
             fi
-            sleep "$WAIT_SECONDS"
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
           done
-          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
           exit 1
 
       - name: Frontend — GET /
         run: |
           url="${FRONTEND_URL%/}/"
-          for i in $(seq 1 "$ATTEMPTS"); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || true)
+          SECONDS=0
+          i=0
+          while true; do
+            i=$((i + 1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$REQUEST_TIMEOUT" "$url" || true)
             echo "Intento $i: $code"
             if [ "$code" = "200" ]; then exit 0; fi
-            sleep "$WAIT_SECONDS"
+            remaining=$((BUDGET_SECONDS - SECONDS))
+            if [ "$remaining" -le 0 ]; then break; fi
+            sleep $((remaining < WAIT_SECONDS ? remaining : WAIT_SECONDS))
           done
-          echo "::error::$url no respondió 200 tras $ATTEMPTS intentos (último: $code)"
+          echo "::error::$url no respondió 200 en ${BUDGET_SECONDS} s ($i intentos, último: $code)"
           exit 1
