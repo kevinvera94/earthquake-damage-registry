@@ -69,7 +69,7 @@
 | T-01b | Infraestructura de pruebas (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #13 |
 | T-04b | Despliegue del backend y del frontend (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #14, #15 |
 | T-04c | Pipeline CI/CD y protección de `main` (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #16 |
-| T-04d | Verificación post-despliegue y mantener activo | David Calambas | Pendiente | — | — |
+| T-04d | Verificación post-despliegue y mantener activo | David Calambas | En curso | 2026-11-26 | — |
 | T-04e | Runbook de despliegue y reversión | David Calambas | Pendiente | — | — |
 | T-09 | API de personas | David Calambas | Pendiente | — | — |
 | T-12 | UI: personas | David Calambas | Pendiente | — | — |
