@@ -491,3 +491,50 @@ def test_create_person_building_deleted_meanwhile_returns_404(
     response = client.post(f"/api/buildings/{building.id}/people", json=_payload())
 
     assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    ("stored", "sent"),
+    [("1000000001", "1.000.000.001"), ("1000000001", "1 000-000-001"), ("AB123", "ab123")],
+)
+def test_create_person_document_number_written_differently_returns_409(
+    client: TestClient,
+    inspector: Profile,
+    make_building: Callable[..., Building],
+    stored: str,
+    sent: str,
+) -> None:
+    """RN-06: puntos, guiones, espacios y mayúsculas no distinguen un documento."""
+    building = make_building()
+    client.post(
+        f"/api/buildings/{building.id}/people",
+        json=_payload(document_type="passport", document_number=stored),
+    )
+
+    response = client.post(
+        f"/api/buildings/{building.id}/people",
+        json=_payload(first_names="Otro", document_type="passport", document_number=sent),
+    )
+
+    assert response.status_code == 409
+
+
+def test_create_person_document_number_is_stored_normalized(
+    client: TestClient, inspector: Profile, make_building: Callable[..., Building]
+) -> None:
+    response = client.post(
+        f"/api/buildings/{make_building().id}/people",
+        json=_payload(document_type="passport", document_number="ab-12.3"),
+    )
+
+    assert response.json()["document_number"] == "AB123"
+
+
+def test_create_person_document_number_only_separators_returns_422(
+    client: TestClient, inspector: Profile, make_building: Callable[..., Building]
+) -> None:
+    response = client.post(
+        f"/api/buildings/{make_building().id}/people", json=_payload(document_number="..-")
+    )
+
+    assert response.status_code == 422

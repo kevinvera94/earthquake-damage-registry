@@ -1,10 +1,12 @@
 """Schemas: Personas ocupantes de una edificación (MOD-03)."""
 
+import re
 import uuid
 from datetime import date, datetime
 from typing import Annotated, Self
 
 from pydantic import (
+    AfterValidator,
     BaseModel,
     ConfigDict,
     Field,
@@ -18,8 +20,21 @@ from app.enums import AgeRange, DocumentType, PopulationType, SpecialCondition, 
 from app.services.ages import age, age_range, today_colombia
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+
+
+def _normalize_document_number(value: str) -> str:
+    """RN-06: "1.000.000.001", "1000000001" y "1 000-000-001" son el mismo documento, igual que
+    "ab123" y "AB123". Se guarda sin puntos, guiones ni espacios y en mayúsculas."""
+    normalized = re.sub(r"[.\-\s]", "", value).upper()
+    if not normalized:
+        raise ValueError("El número de documento no puede estar vacío.")
+    return normalized
+
+
 DocumentNumber = Annotated[
-    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=30),
+    AfterValidator(_normalize_document_number),
 ]
 
 
