@@ -98,8 +98,12 @@ services:
 - **Resultado:** si CI falla no se fusiona, y si no se fusiona no se despliega (CLAUDE.md: no desplegar sin tests)
 
 ### 5.3 `smoke.yml` — verificación post-despliegue (T-04d)
-- **Disparadores:** `deployment_status` exitoso en producción, `workflow_dispatch` (manual) y `schedule` cada 2 días
+- **Disparadores:**
+  - `deployment_status` exitoso que no sea *preview*: lo publica **Render** (entorno `main - edr-backend`) al desplegar el backend, solo si el commit cambia `backend/` (`rootDir`)
+  - `workflow_run` del workflow **CI** en `main` con resultado `success`: **Vercel no publica `deployment_status`** en este repositorio (verificado en T-04d), así que así se verifica el frontend tras cada fusión
+  - `workflow_dispatch` (manual) y `schedule` cada 2 días (`0 12 */2 * *`, 07:00 Colombia)
 - **Comprobaciones** (con reintentos durante ~2 min por el arranque en frío): `GET /api/health` = 200, `GET /api/public/stats` = 200 sin token, `GET <frontend>/` = 200
+  - Mientras `STATS_REQUIRED: "false"` (en `smoke.yml`), un 404 en `/api/public/stats` solo da un aviso. **T-16 debe cambiarlo a `"true"`**
 - **Secretos de GitHub:** solo `PROD_API_URL` y `PROD_FRONTEND_URL` (no son sensibles, pero no se escriben en el YAML para poder cambiarlas)
 
 ## 6. Operación en capa gratuita
