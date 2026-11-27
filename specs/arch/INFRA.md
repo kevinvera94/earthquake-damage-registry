@@ -110,7 +110,7 @@ services:
 | Cuenta única en Vercel Hobby | Un integrante es dueño de las tres cuentas (BRIEF P-02) y comparte las variables por un canal privado |
 
 ## 7. Runbook de despliegue
-> Lo completa y ensaya David Calambas en T-04e. Debe permitir que **otro** integrante despliegue y revierta sin ayuda.
+> Completado por David Calambas en T-04e (2026-11-26). Debe permitir que **otro** integrante despliegue y revierta sin ayuda. Los tiempos de §7.3 son medidos; los de §7.4 se anotan en su registro de ensayos.
 
 ### 7.1 Dueños y accesos
 > T-04a (2026-11-26): las cuentas quedaron a nombre de **Kevin Vera** (T-04a se reasignó desde David Calambas; ver BITACORA).
@@ -145,7 +145,32 @@ services:
 ### 7.3 Despliegue habitual
 Fusionar un PR en `main` → CI pasa → Render y Vercel despliegan solos → `smoke.yml` corre. **Nadie despliega a mano.**
 
-Verificación tras cada despliegue: *smoke* en verde en *Actions*; si el PR tocó la BD, revisar en el log de Render que `alembic upgrade head` terminó sin errores.
+**Qué pasa después de fusionar, y cuánto tarda** (medido el 2026-11-26 en T-04e):
+
+| Paso | Quién lo hace | Cuándo ocurre | Tiempo medido |
+|---|---|---|---|
+| 1. CI en `main` (`backend` + `frontend`) | GitHub Actions (`ci.yml`) | Al fusionar | ≈ 40 s (#16, #18 y #19) |
+| 2. Frontend a producción | Vercel, proyecto `earthquake-damage-registry` | Al fusionar, **sin esperar a CI** (Vercel no lee los *checks*) | ≈ 5–10 s en #16, #18 y #19, que no cambiaron `frontend/`; un cambio real del frontend tarda más (se mide en el ensayo) |
+| 3. Backend a producción | Render, servicio `edr-backend` | Cuando CI pasa (`autoDeployTrigger: checksPass`) y **solo si el commit cambia `backend/`** (`rootDir: backend`) | ≈ 1 min de build y arranque (`in_progress` → `success`, despliegue de #14) |
+| 4. *Smoke* | GitHub Actions (`smoke.yml`, T-04d) | Al terminar CI en verde (`workflow_run`) y cuando Render reporta el despliegue (`deployment_status`, entorno `main - edr-backend`) | ≈ 30 s con Render despierto; hasta ≈ 2 min si está dormido |
+
+> Un PR que solo toca `frontend/`, `specs/` o `.github/` **no** redespliega el backend. Es lo esperado, no un error.
+
+**Cómo verificar un despliegue**
+1. GitHub → *Actions* → **Smoke**: la última ejecución en verde. Un aviso amarillo por `/api/public/stats` es normal mientras T-16 no esté fusionada
+2. Si el PR tocó el backend: GitHub → pestaña *Deployments* del repositorio (o Render → `edr-backend` → *Events*) → el despliegue del commit fusionado en *success*
+3. Si el PR tocó la BD: Render → `edr-backend` → *Logs* del build → `alembic upgrade head` termina sin errores
+4. Abrir https://earthquake-damage-registry.vercel.app y https://edr-backend-4uc1.onrender.com/api/health (debe responder `ok`)
+
+**Si un despliegue falla**
+
+| Síntoma | Dónde mirar | Qué hacer |
+|---|---|---|
+| CI en rojo en `main` | *Actions* → **CI** → job en rojo | Render **no** despliega. Corregir con un PR nuevo; Vercel sí desplegó el frontend: si está roto, revertirlo (§7.4) |
+| Render en *Build failed* | Render → `edr-backend` → *Events* → log del build | Suele ser una dependencia o una migración. El servicio sigue sirviendo la versión anterior: no hay caída. Corregir con un PR |
+| Render en *Deploy failed* (no pasa `/api/health`) | Render → *Logs* del servicio | Revisar las variables del Environment Group `edr-backend-prod` y la conexión a Supabase. La versión anterior sigue activa |
+| *Smoke* en rojo y lo demás en verde | *Actions* → **Smoke** → paso en rojo | Si falla `/api/health` → revertir el backend (§7.4). Si falla el frontend → revertir en Vercel |
+| `/api/health` da 5xx o *timeout* tras un tiempo sin uso | Supabase → `edr-prod` | El proyecto puede estar pausado (7 días sin uso): *Restore project* y esperar ≈ 2 min |
 
 ### 7.4 Reversión (*rollback*)
 | Pieza | Cómo | Cuándo |
@@ -156,6 +181,36 @@ Verificación tras cada despliegue: *smoke* en verde en *Actions*; si el PR toc�
 | Base de datos | Las migraciones son **solo hacia adelante**: un error se corrige con una nueva migración. Antes de fusionar una migración destructiva (borrar o renombrar columnas), avisar en el grupo | Migración defectuosa |
 
 > El *rollback* del backend **no** deshace migraciones. Por eso las migraciones deben ser compatibles con la versión anterior del código (agregar antes de quitar).
+
+> **Quién puede revertir:** Render y Vercel están en las cuentas personales de **Kevin Vera** (§7.1). Mientras nadie más tenga acceso, el *rollback* lo hace Kevin; los demás solo pueden hacer el `git revert` por PR.
+
+**Paso a paso: frontend (Vercel)**
+1. Vercel → *scope* `kevinvera94s-projects` → proyecto `earthquake-damage-registry` → pestaña *Deployments*
+2. Buscar el último despliegue **Production** sano (el anterior al que falló) → menú `⋯` → *Instant Rollback* → confirmar
+3. Verificar que https://earthquake-damage-registry.vercel.app muestra la versión anterior
+4. ⚠️ Tras un *Instant Rollback*, Vercel **deja de promover** a producción los despliegues nuevos de `main` hasta deshacerlo. Cuando el `git revert` (o la corrección) esté fusionado: *Deployments* → *Undo Rollback*, o *Promote to Production* sobre el despliegue nuevo
+5. `git revert` del PR culpable en una rama nueva → PR → fusión
+
+**Paso a paso: backend (Render)**
+1. Render → servicio `edr-backend` → *Events*
+2. Ubicar el último despliegue *live* sano → *Rollback* → confirmar. Render vuelve a servir ese *build* sin reconstruir
+3. Verificar `/api/health` = `ok` y lanzar **Smoke** a mano (*Actions* → **Smoke** → *Run workflow*)
+4. ⚠️ Render **desactiva el *auto-deploy*** del servicio al hacer *rollback*, para que el siguiente commit no lo pise. Cuando la corrección esté fusionada: `edr-backend` → *Settings* → *Build & Deploy* → *Auto-Deploy* → volver a **After CI Checks Pass**. Si se olvida, ningún PR posterior llega a producción
+5. `git revert` del PR culpable en una rama nueva → PR → fusión
+
+**Cómo ensayar la reversión** (T-04e; repetir si cambia la configuración)
+1. Fusionar un PR trivial que cambie algo **visible** en `frontend/` y algo en `backend/` (p. ej. un comentario y el texto de una página de relleno)
+2. Esperar el *smoke* en verde y anotar la hora
+3. Hacer el *rollback* de los dos con los pasos de arriba, cronometrando cada uno
+4. Verificar que producción volvió a la versión anterior
+5. Reactivar el *auto-deploy* de Render y deshacer el *rollback* de Vercel; fusionar el `git revert` del PR trivial
+6. Anotar el resultado en el registro de abajo
+
+**Registro de ensayos**
+
+| Fecha | Quién | Vercel: tiempo del *rollback* | Render: tiempo del *rollback* | Observaciones |
+|---|---|---|---|---|
+| *pendiente* | Kevin Vera (dueño de las cuentas), acompañado por David Calambas | — | — | — |
 
 ### 7.5 Lista de chequeo antes de la entrega (T-23)
 - [ ] `smoke.yml` en verde en las últimas 24 h
