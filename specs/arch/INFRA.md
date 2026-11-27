@@ -110,7 +110,7 @@ services:
 | Cuenta única en Vercel Hobby | Un integrante es dueño de las tres cuentas (BRIEF P-02) y comparte las variables por un canal privado |
 
 ## 7. Runbook de despliegue
-> Completado por David Calambas en T-04e (2026-11-26). Debe permitir que **otro** integrante despliegue y revierta sin ayuda. Los tiempos de §7.3 son medidos; los de §7.4 se anotan en su registro de ensayos.
+> Documentado por David Calambas en T-04e (2026-11-26); **el ensayo de reversión está pendiente** (ver el registro de §7.4). Debe permitir que **otro** integrante despliegue y revierta sin ayuda. Los tiempos de §7.3 son medidos; los de §7.4 se anotan en su registro de ensayos.
 
 ### 7.1 Dueños y accesos
 > T-04a (2026-11-26): las cuentas quedaron a nombre de **Kevin Vera** (T-04a se reasignó desde David Calambas; ver BITACORA).
@@ -170,7 +170,7 @@ Fusionar un PR en `main` → CI pasa → Render y Vercel despliegan solos → `s
 | Render en *Build failed* | Render → `edr-backend` → *Events* → log del build | Suele ser una dependencia o una migración. El servicio sigue sirviendo la versión anterior: no hay caída. Corregir con un PR |
 | Render en *Deploy failed* (no pasa `/api/health`) | Render → *Logs* del servicio | Revisar las variables del Environment Group `edr-backend-prod` y la conexión a Supabase. La versión anterior sigue activa |
 | *Smoke* en rojo y lo demás en verde | *Actions* → **Smoke** → paso en rojo | Si falla `/api/health` → revertir el backend (§7.4). Si falla el frontend → revertir en Vercel |
-| `/api/health` da 5xx o *timeout* tras un tiempo sin uso | Supabase → `edr-prod` | El proyecto puede estar pausado (7 días sin uso): *Restore project* y esperar ≈ 2 min |
+| `/api/health` da 5xx o *timeout* tras un tiempo sin uso | Supabase → `edr-prod` | El proyecto puede estar pausado (7 días sin uso): *Restore project* y esperar a que quede *Active* (unos minutos; no medido) |
 
 ### 7.4 Reversión (*rollback*)
 | Pieza | Cómo | Cuándo |
@@ -183,6 +183,8 @@ Fusionar un PR en `main` → CI pasa → Render y Vercel despliegan solos → `s
 > El *rollback* del backend **no** deshace migraciones. Por eso las migraciones deben ser compatibles con la versión anterior del código (agregar antes de quitar).
 
 > **Quién puede revertir:** Render y Vercel están en las cuentas personales de **Kevin Vera** (§7.1). Mientras nadie más tenga acceso, el *rollback* lo hace Kevin; los demás solo pueden hacer el `git revert` por PR.
+
+> Los avisos ⚠️ de abajo (Vercel deja de promover y Render desactiva el *auto-deploy*) vienen de la documentación de cada proveedor; se confirman en el ensayo.
 
 **Paso a paso: frontend (Vercel)**
 1. Vercel → *scope* `kevinvera94s-projects` → proyecto `earthquake-damage-registry` → pestaña *Deployments*
