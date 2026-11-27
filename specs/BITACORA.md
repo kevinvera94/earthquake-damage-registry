@@ -73,7 +73,7 @@
 | T-04e | Runbook de despliegue y reversión | David Calambas | Pendiente | — | — |
 | T-09 | API de personas | David Calambas | En curso | 2026-11-26 | — |
 | T-12 | UI: personas | David Calambas | Pendiente | — | — |
-| T-18 | Exportación a PDF | David Calambas | Pendiente | — | — |
+| T-18 | Exportación a PDF | David Calambas | En curso | 2026-11-27 | — |
 | T-21 | Carga de datos en producción | David Calambas | Pendiente | — | — |
 | T-22a | Revisión de pruebas y cobertura | David Calambas | Pendiente | — | — |
 | T-22 | Pruebas de aceptación en producción (coordina; participan los tres) | David Calambas | Pendiente | — | — |
