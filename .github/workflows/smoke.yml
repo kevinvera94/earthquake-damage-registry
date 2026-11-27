@@ -4,8 +4,15 @@
 name: Smoke
 
 on:
-  # Vercel y Render publican el resultado de cada despliegue como `deployment_status`
+  # Render publica cada despliegue del backend como `deployment_status` (entorno
+  # "main - edr-backend"); por `rootDir: backend` solo despliega si cambia `backend/`
   deployment_status:
+  # Vercel no publica `deployment_status` en este repositorio: tras cada fusión en `main`
+  # se verifica cuando termina CI, momento en que Vercel ya desplegó el frontend
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
   schedule:
     # 12:00 UTC (07:00 Colombia) en los días impares del mes
@@ -20,12 +27,14 @@ concurrency:
 
 jobs:
   smoke:
-    # En `deployment_status` solo cuenta un despliegue exitoso de producción:
-    # los *previews* de Vercel usan el entorno "Preview" y no se verifican aquí
+    # Solo cuenta un despliegue exitoso de producción (los *previews* empiezan por
+    # "Preview") y un CI en verde sobre `main` (si CI falla, Render no despliega)
     if: >-
-      github.event_name != 'deployment_status' ||
-      (github.event.deployment_status.state == 'success' &&
-       github.event.deployment.environment != 'Preview')
+      (github.event_name != 'deployment_status' ||
+       (github.event.deployment_status.state == 'success' &&
+        !startsWith(github.event.deployment.environment, 'Preview'))) &&
+      (github.event_name != 'workflow_run' ||
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -65,7 +74,7 @@ jobs:
             echo "Intento $i: $code"
             if [ "$code" = "200" ]; then exit 0; fi
             if [ "$code" = "404" ] && [ "$STATS_REQUIRED" != "true" ]; then
-              echo "::warning::$url responde 404: el endpoint aún no existe (T-16)"
+              echo "::warning::$url responde 404: se tolera porque STATS_REQUIRED=false (T-16 pendiente). Al publicar T-16, cambiarlo a \"true\""
               exit 0
             fi
             sleep "$WAIT_SECONDS"
