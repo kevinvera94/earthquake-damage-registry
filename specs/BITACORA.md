@@ -53,7 +53,7 @@
 | ID | Tarea | Persona | Estado | Fecha | PR |
 |---|---|---|---|---|---|
 | T-02 | Esqueleto del frontend y archivos compartidos (reasignada a Kevin Vera; ver su sección) | Kevin Vera | Finalizado | 2026-11-26 | #10 |
-| T-07 | API de edificaciones *(referencia)* | Valentina Sepúlveda | Pendiente | — | — |
+| T-07 | API de edificaciones *(referencia)* | Valentina Sepúlveda | En curso | 2026-11-27 | — |
 | T-10 | UI: buscar y crear/editar edificación *(referencia)* | Valentina Sepúlveda | Pendiente | — | — |
 | T-08 | API de inspecciones | Valentina Sepúlveda | Pendiente | — | — |
 | T-11 | UI: ficha e inspección | Valentina Sepúlveda | Pendiente | — | — |
